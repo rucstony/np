@@ -62,7 +62,8 @@ int sockcount=0;
 		exit(1);	
 	}	setsockopt(sockfd[sockcount], SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
-		sa = (struct sockaddr_in *) ifi->ifi_addr;
+	bzero(&sa, sizeof(sa));
+	
 		sa->sin_family = AF_INET;
 		sa->sin_port = htons(*configdata[0]);
 		bind(sockfd[sockcount], (SA *) sa, sizeof(*sa));

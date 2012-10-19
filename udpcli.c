@@ -1,8 +1,9 @@
 #include	"unpifiplus.h"
+#include <string.h>
 
 #undef MAXLINE
 #define MAXLINE 65507
-
+typedef char* string; 
 typedef struct {
         struct sockaddr  *ip_addr;   /* IP address bound to socket */
         int    sockfd;   /* socket descriptor */
@@ -10,7 +11,9 @@ typedef struct {
         struct sockaddr  *subnetaddr;  /* netmask address */
 
 }socket_info;
-
+typedef struct {
+char data[MAXLINE];
+}config;
 int
 main(int argc, char **argv)
 {
@@ -21,9 +24,8 @@ main(int argc, char **argv)
         pid_t                           pid;
         struct ifi_info         *ifi, *ifihead;
         struct sockaddr_in      *sa;
-
+	config configdata[7]; 
 	char            dataline[MAXLINE];
-	char *configdata[7];
         socket_info sockinfo[10];
 
 	char  IPServer[20],IPClient[20];   /* IP address bound to socket */
@@ -43,23 +45,53 @@ main(int argc, char **argv)
 	
 	int countline=0;
 	int n=0;
+
+int j=0;
+/*for(j=0; j<7;j++)
+{
+configdata[j].data="NA";
+printf("loop: %s\n",configdata[j].data);
+
+}
+*/
+//dataline=malloc(MAXLINE);
+
 	while (fgets(dataline,MAXLINE,ifp)!=NULL)
 	{
-		n=strlen(dataline);	
-		configdata[countline]=dataline;	
+
+
+		if(countline>0)
+			printf("reading from config %s \n", configdata[countline-1].data);
+	
+		n=strlen(dataline);
+		printf("tony:%d\n",countline);	
+		strcpy(configdata[countline].data,dataline);
+int s;
+s=strlen(configdata[countline].data);
+
+    if (s > 0 && configdata[countline].data[s-1] == '\n')  // if there's a newline
+        configdata[countline].data[s-1] = '\0';          // truncate the string
+
+	
+
 		dataline[n]=0;
+	
 		fputs(dataline,stdout);
-		printf("reading from config %s \n", configdata[countline]);
+		if(countline>0)	
+			printf("reading from config %s \n", configdata[countline-1].data);
 		countline++;	
-		}	
+		//free(dataline);
+		//dataline=malloc(MAXLINE);	
+	}	
        	printf("read %d lines\n", countline);
-fclose(ifp);
-    sprintf(IPServer,"%s",configdata[0]);
+	fclose(ifp);
+    	sprintf(IPServer,"%s",configdata[0].data);
+	printf("IPServer:%s\n",IPServer );
  
 	   for (ifihead = ifi = get_ifi_info_plus(AF_INET, 1);
                  ifi != NULL; ifi = ifi->ifi_next) {
 
-        sockfd[sockcount]=-1;
+       // sockfd[sockcount]=-1;
 
       //  if((    sockfd[sockcount]= socket(AF_INET, SOCK_DGRAM, 0))==NULL)
        // {printf("socket error\n");
@@ -68,10 +100,10 @@ fclose(ifp);
 
                 sa = (struct sockaddr_in *) ifi->ifi_addr;
                 sa->sin_family = AF_INET;
-                sa->sin_port = htons((size_t)configdata[1]);
+                sa->sin_port = htons((size_t)configdata[1].data);
                inet_pton(AF_INET, argv[1], &servaddr.sin_addr);
  
-                sockinfo[sockcount].sockfd=sockfd[sockcount];
+                sockinfo[sockcount].sockfd=-1;
                 sockinfo[sockcount].ip_addr=(SA *)sa;
                 sockinfo[sockcount].ntmaddr=ifi->ifi_ntmaddr;
                 //sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
@@ -87,25 +119,72 @@ printf("net addr: %s\n",
 
 }
 int x=0;
-if(strcmp(IPServer,"127.0.0.1\n")==0);
-printf("voilaa!\n");
-for (x=0;sockinfo[x].sockfd!=NULL;x++)
+ printf("IPServer compare:%d\n",strcmp(IPServer,"127.0.0.1\n") );
+//if(strcmp(IPServer,"127.0.0.1\n")==0)
+//strcpy(IPServer,"127.0.0.1\n");
+int flag=0;
+	for (x=0;sockinfo[x].sockfd!=NULL;x++)
 {
 printf(" check  IP addr: %s\n",
                                                 sock_ntop_host(sockinfo[x].ip_addr, sizeof(*sockinfo[x].ip_addr)));
+printf(" check  configdata[0].data: %s\n",
+                                               configdata[0].data);
 
 	
-	if(strcmp(sock_ntop_host(sockinfo[x].ip_addr, sizeof(*sockinfo[x].ip_addr)),"127.0.0.1\n")==0)
+	if(strcmp(sock_ntop_host(sockinfo[x].ip_addr, sizeof(*sockinfo[x].ip_addr)),configdata[0].data)==0)
 	{
-	printf("match found\n");	
+	strcpy(IPServer,"127.0.0.1\n");
+	strcpy(IPClient,"127.0.0.1\n");
+flag=1;
+printf("match found---same host---use loop back %s %s \n",IPServer,IPClient);
+
+	if((    sockinfo[x].sockfd= socket(AF_INET, SOCK_DGRAM, 0))==NULL)
+       	{
+		printf("socket error\n");
+                exit(1);
+        }
+       printf("1\n"); 
+	 setsockopt(sockinfo[x].sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	printf("1\n");
+
+        printf("1\n");
+        bzero(&servaddr, sizeof(servaddr));
+ 
+	servaddr.sin_family = AF_INET;
+ printf("1\n");
+                servaddr.sin_port = 0;
+		printf("1\n");
+
+                bind(sockinfo[x].sockfd, (SA *) &servaddr, sizeof(servaddr));
+       		printf("bound....%d\n",sockinfo[x].sockfd);	
+		struct sockaddr_in ss;
+		socklen_t slen;
+		char str[INET_ADDRSTRLEN];
+printf("1\n");
+	
+		if(getsockname(sockinfo[x].sockfd,(SA * )&ss,&slen)<0)
+		{printf("sockname error\n");
+                exit(1);
+		}	
+printf("1\n");
+
+		//printf("IPClient: %s\n",inet_ntop(AF_INET,ss.sin_addr.s_addr,str, sizeof(ss.sin_addr)));
+		printf("bound-port-%d-\n",ss.sin_port);
+
+  printf("socket bound: %d\n",sockinfo[x].sockfd);
+	
 	}
+}
+if(!flag)
+{
+	printf("long prefix match logic comes here...\n");
 }
 	sockfd[0] = socket(AF_INET, SOCK_DGRAM, 0);
 
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_port = htons((size_t)configdata[1]);
-	inet_pton(AF_INET, configdata[0], &servaddr.sin_addr);
+	servaddr.sin_port = htons((size_t)configdata[1].data);
+	inet_pton(AF_INET, configdata[0].data, &servaddr.sin_addr);
 
 	//sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
