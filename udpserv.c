@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
-	struct sockaddr_in	sa, cliaddr, wildaddr;	
+	struct sockaddr_in	*sa, cliaddr, wildaddr;	
 	char            	dataline[MAXLINE] ;
 	config 				configdata[2]; 
 	char 				*mode = "r";
@@ -72,14 +72,14 @@ int main(int argc, char **argv)
 			exit(1);	
 		}	setsockopt( sockfd[sockcount], SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
 
-		bzero( &sa, sizeof( sa ) );
+		bzero( sa, sizeof( *sa ) );
 	
-		sa = ( struct sockaddr_in * ) ifi->ifi_addr;
-		sa.sin_family = AF_INET;
-		sa.sin_port = htons( configdata[0].data );
-		bind( sockfd[sockcount], (SA *) &sa, sizeof( sa ) );
+		sa = ( struct sockaddr_in * )ifi->ifi_addr;
+		sa->sin_family = AF_INET;
+		sa->sin_port = htons( ( size_t )configdata[0].data );
+		bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
-		sockinfo[ sockcount ].ip_addr = (SA *)&sa;
+		sockinfo[ sockcount ].ip_addr = (SA *)sa;
 		sockinfo[ sockcount ].ntmaddr = (struct sockaddr_in *)ifi->ifi_ntmaddr;
 		//sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 
