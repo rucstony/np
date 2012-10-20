@@ -185,7 +185,8 @@ int main( int argc, char **argv )
    
 	   	subnet.s_addr = ip.s_addr & netmask.s_addr;
     	printf("HIIIIIII456\n");
-    	inet_ntop( AF_INET, &sockinfo[0].subnetaddr, network, MAXLINE );
+    	
+    	inet_ntop( AF_INET, sf, network, MAXLINE );
     	sprintf( temp1, "%s\n", network );
     	printf("%s\n", temp1 );
 //		inet_aton( configdata[0].data, &ip );
