@@ -199,9 +199,9 @@ int main( int argc, char **argv )
 				printf("Not on the same network.. Suck on this..\n");
 			}	
 		}
-		if( longest_prefix_netmask != NULL )
+		if( longest_prefix_netmask.s_addr != NULL )
 		{
-			strcpy( IPClient, longest_prefix_ip );
+			strcpy( IPClient, inet_ntop( AF_INET, &longest_prefix_ip, network2, MAXLINE ) );
 			printf("Client address selected as : %s which is on same network as Server with IP : %s\n", IPClient, IPServer );
 		}	
 	}
