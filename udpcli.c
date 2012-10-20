@@ -49,10 +49,6 @@ int main( int argc, char **argv )
 		exit(1);
 	}
 	
-	int countline = 0;
-	int n=0;
-	int j=0;
-
 	/*
 	for(j=0; j<7;j++)
 	{
