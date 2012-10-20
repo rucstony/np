@@ -158,7 +158,7 @@ int main( int argc, char **argv )
 	{
 			printf( "long prefix match logic comes here...\n" );
 		/* Longest prefix matching on output from getifinfo_plus */
-		struct in_addr ip, netmask, subnet, serverip;
+		struct in_addr ip, netmask, subnet, serverip, ip123, ip456;
 		char network1[MAXLINE], network2[MAXLINE], ip1[MAXLINE], nm1[MAXLINE];
 
 		for ( x = 0; sockinfo[x].sockfd != NULL; x++ )
@@ -181,12 +181,21 @@ int main( int argc, char **argv )
 	    	subnet.s_addr = serverip.s_addr & netmask.s_addr;
 			    	
 			inet_ntop( AF_INET, &subnet, network2, MAXLINE );
-	  		
+
+			/**/
+			inet_pton( AF_INET, "255.255.255.0", &ip123 );
+			inet_pton( AF_INET, "255.255.255.128", &ip456 );
+	
+	  		/**/
 			printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", configdata[0].data, nm1, network2 );
 
 			if( strcmp( network1, network2 ) == 0 )
 			{
 				printf("Wooooo ! On the same network biyatches !!\n");
+				if( ip123.s_addr < ip456.s_addr )
+				{
+					printf("GREATER!!!!\n");
+				}	
 			}	
 			else
 			{
