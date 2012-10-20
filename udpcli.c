@@ -107,8 +107,8 @@ int main( int argc, char **argv )
 				sock_ntop_host( sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ) ); 
 		printf("net addr: %s\n",
         		sock_ntop_host( sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
-                sockcount++;
-	*/
+    */
+        sockcount++;
 	}
 	/*
 	if(strcmp(IPServer,"127.0.0.1\n")==0)	
@@ -161,10 +161,6 @@ int main( int argc, char **argv )
 		struct in_addr ip, netmask, subnet, serverip;
 		char network1[MAXLINE], network2[MAXLINE], ip1[MAXLINE], nm1[MAXLINE];
 
-		for ( x = 0; sockinfo[x].sockfd != NULL; x++ )
-		{
-			printf("THIS\n");
-		}	
 		for ( x = 0; sockinfo[x].sockfd != NULL; x++ )
 		{
 			struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[x].ip_addr);
