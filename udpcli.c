@@ -76,6 +76,10 @@ int main( int argc, char **argv )
 	sprintf( IPServer, "%s", configdata[0].data );
 	printf( "IPServer:%s\n", IPServer );
 
+	printf("***************************\n");
+	printf("	  INTERFACE IP'S 	   \n");
+	printf("***************************\n");
+
 	for ( ifihead = ifi = get_ifi_info_plus( AF_INET, 1 );
  		  ifi != NULL;
  		  ifi = ifi->ifi_next) 
@@ -102,12 +106,10 @@ int main( int argc, char **argv )
 		/* 
 		sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 		*/
-		printf("sockfd----- %d\n", sockinfo[sockcount].sockfd);
-	/*	printf("IP addr: %s\n", 
-				sock_ntop_host( sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ) ); 
-		printf("net addr: %s\n",
-        		sock_ntop_host( sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
-    */
+		printf("IP Address : %s, Network Mask : %s\n", 
+				sock_ntop_host( sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ), 
+				sock_ntop_host( sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
+    
         sockcount++;
 	}
 	/*
@@ -123,8 +125,8 @@ int main( int argc, char **argv )
 		
 			strcpy( IPServer, "127.0.0.1\n" );
 			strcpy( IPClient, "127.0.0.1\n" );
-			printf( "Match found : same host : Using loopback..\n" );
-
+			printf("STATUS : SAME HOST\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
+	
 			if( ( sockinfo[x].sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
 			{
 				printf( "socket error\n" );
@@ -158,7 +160,8 @@ int main( int argc, char **argv )
 	{
 			printf( "long prefix match logic comes here...\n" );
 		/* Longest prefix matching on output from getifinfo_plus */
-		struct in_addr ip, netmask, subnet, serverip, longest_prefix_ip, longest_prefix_netmask;
+		struct in_addr ip, netmask, subnet, serverip, default_ip;
+		struct in_addr longest_prefix_ip, longest_prefix_netmask;
 		char network1[MAXLINE], network2[MAXLINE], ip1[MAXLINE], nm1[MAXLINE];
 
 		for ( x = 0; sockinfo[x].sockfd != NULL; x++ )
@@ -168,6 +171,11 @@ int main( int argc, char **argv )
 
 			ip = sd->sin_addr;
 			netmask = se->sin_addr;
+
+			if( default_ip.s_addr == NULL )
+			{
+				default_ip = ip;
+			}	
 
 	 	   	subnet.s_addr = ip.s_addr & netmask.s_addr;
 	    	
@@ -201,8 +209,16 @@ int main( int argc, char **argv )
 		}
 		if( longest_prefix_netmask.s_addr != NULL )
 		{
+			/* Longest prefix address is set as client IP. */
 			strcpy( IPClient, inet_ntop( AF_INET, &longest_prefix_ip, network2, MAXLINE ) );
-			printf("Client address selected as : %s which is on same network as Server with IP : %s\n", IPClient, IPServer );
+			printf("STATUS : LOCAL\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
+		}	
+		else
+		{
+			/* Assign any arbitrary IP address to the client. */
+			strcpy( IPClient, inet_ntop( AF_INET, &default_ip, network2, MAXLINE ) );
+			printf("STATUS : NOT LOCAL\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
+
 		}	
 	}
 
