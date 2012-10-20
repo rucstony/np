@@ -160,10 +160,13 @@ int main( int argc, char **argv )
 		/* Longest prefix matching on output from getifinfo_plus */
 		struct in_addr ip, netmask, subnet, serverip;
 		char network1[MAXLINE], network2[MAXLINE], ip1[MAXLINE], nm1[MAXLINE];
-	
-		for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
-		{
 
+		for ( x = 0; sockinfo[x].sockfd != NULL; x++ )
+		{
+			printf("THIS\n");
+		}	
+		for ( x = 0; sockinfo[x].sockfd != NULL; x++ )
+		{
 			struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[x].ip_addr);
 			struct sockaddr_in *se = (struct sockaddr_in *)(sockinfo[x].ntmaddr);
 
