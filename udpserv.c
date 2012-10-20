@@ -3,11 +3,10 @@
 
 typedef struct 
 {
-  	int    				sockfd;   /* socket descriptor */
-  	struct sockaddr 	*ip_addr;   /* IP address bound to socket */
-  	struct sockaddr 	*ntmaddr;  /* netmask address for IP */
-	struct sockaddr 	*subnetaddr;  /* netmask address */
-
+	struct sockaddr_in  *ip_addr;   /* IP address bound to socket */
+	int    sockfd;   /* socket descriptor */
+	struct sockaddr_in  *ntmaddr;  /* netmask address for IP */
+	struct sockaddr_in  *subnetaddr;  /* netmask address */
 }socket_info;
 
 //typedef struct socket_info socket_info;
@@ -25,7 +24,7 @@ int main(int argc, char **argv)
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
-	struct sockaddr_in	*sa, cliaddr, wildaddr;	
+	struct sockaddr_in	sa, cliaddr, wildaddr;	
 	char            	dataline[MAXLINE] ;
 	config 				configdata[2]; 
 	char 				*mode = "r";
@@ -74,23 +73,23 @@ int main(int argc, char **argv)
 
 		bzero( &sa, sizeof( sa ) );
 	
-		sa->sin_family = AF_INET;
-		printf("%s\n",configdata[0].data );
-//		sa->sin_port = htons( configdata[0].data );
-		bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
+		sa.sin_family = AF_INET;
+//		printf("%s\n",configdata[0].data );
+		sa.sin_port = htons( configdata[0].data );
+		bind( sockfd[sockcount], (SA *) &sa, sizeof( sa ) );
 		printf( "bound---\n" );	
 		printf( "bound----- %d\n", sockcount );
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
-		sockinfo[ sockcount ].ip_addr = (SA *)sa;
-		sockinfo[ sockcount ].ntmaddr = ifi->ifi_ntmaddr;
+		sockinfo[ sockcount ].ip_addr = (SA *)&sa;
+		sockinfo[ sockcount ].ntmaddr = (struct sockaddr_in *)ifi->ifi_ntmaddr;
 		//sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 		printf( "sockfd----- %d\n", sockinfo[ sockcount ].sockfd );
 
 		printf("  IP addr: %s\n",
-				sock_ntop_host( sockinfo[sockcount].ip_addr, sizeof( *sockinfo[sockcount].ip_addr ) ) );
+				sock_ntop_host( (SA *)sockinfo[sockcount].ip_addr, sizeof( *sockinfo[sockcount].ip_addr ) ) );
 
 		printf("ddr: %s\n",
-				sock_ntop_host( sockinfo[sockcount].ntmaddr, sizeof(*sockinfo[sockcount].ntmaddr ) ) );
+				sock_ntop_host( (SA *)sockinfo[sockcount].ntmaddr, sizeof(*sockinfo[sockcount].ntmaddr ) ) );
 		sockcount++;
 		//		if ( (pid = fork()) == 0) {		/* child */
 		//			mydg_echo(sockfd, (SA *) &cliaddr, sizeof(cliaddr), (SA *) sa);
