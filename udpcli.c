@@ -164,18 +164,22 @@ int main( int argc, char **argv )
 		
 		char temp1[MAXLINE];
 		char temp2[MAXLINE];
-		char *ipa, *ntm;
+		char *network;
 		//We are converting the fucking ip_addr to string and ntm_addr to string.
 
-		inet_ntop( AF_INET, &sockinfo[0].ip_addr, ipa, MAXLINE );
-		inet_ntop( AF_INET, &sockinfo[0].ntmaddr, ntm, MAXLINE );
+		ip = sockinfo[0].ip_addr.sin_addr;
+		netmask = sockinfo[0].ntmaddr.sin_addr;
 
-		inet_aton( ipa, &ip );
- 	   	inet_aton( ntm, &netmask );
+//		inet_ntop( AF_INET, &sockinfo[0].ip_addr, ipa, MAXLINE );
+//		inet_ntop( AF_INET, &sockinfo[0].ntmaddr, ntm, MAXLINE );
+
+//		inet_aton( ipa, &ip );
+ //	   	inet_aton( ntm, &netmask );
  
     	// bitwise AND of ip and netmask gives the network
-    	network.s_addr = ip.s_addr & netmask.s_addr;
-    	sprintf( temp1, "%s\n", inet_ntoa( network ) );
+    	sockinfo[0].subnetaddr.sin_addr.s_addr = ip.s_addr & netmask.s_addr;
+    	inet_ntop( AF_INET, &sockinfo[0].subnetaddr, network, MAXLINE );
+    	sprintf( temp1, "%s\n", network );
     	printf("%s\n", temp1 );
 //		inet_aton( configdata[0].data, &ip );
  //	   	inet_aton( sockinfo[x].ntmaddr, &netmask );
