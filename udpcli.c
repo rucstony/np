@@ -61,12 +61,7 @@ int main( int argc, char **argv )
 
 	while ( fgets( dataline,MAXLINE,ifp ) != NULL )
 	{
-		if( countline > 0 )
-		{	
-			printf( "reading from config %s \n", configdata[ countline-1 ].data );
-		}	
 		n = strlen( dataline );
-		//printf("tony:%d\n",countline);	
 		strcpy( configdata[countline].data, dataline );
 		s = strlen( configdata[ countline ].data );
 
@@ -74,19 +69,14 @@ int main( int argc, char **argv )
     	{	
         	configdata[countline].data[s-1] = '\0';          /* truncate the string */
         }	
-		dataline[n]=0;
+		dataline[n] = 0;
 		fputs( dataline, stdout );
-		if( countline > 0 )	
-		{
-			printf("reading from config %s \n", configdata[countline-1].data);
-		}
 		countline++;	
 		/*
 		free(dataline);
 		dataline=malloc(MAXLINE);	
 		*/
 	}	
-    printf("read %d lines\n", countline);
 	fclose( ifp );
 	sprintf( IPServer, "%s", configdata[0].data );
 	printf( "IPServer:%s\n", IPServer );
@@ -125,7 +115,6 @@ int main( int argc, char **argv )
                 sockcount++;
 	}
 	int x = 0;
- 	printf( "IPServer compare:%d\n", strcmp( IPServer, "127.0.0.1\n" ) );
 	/*
 	if(strcmp(IPServer,"127.0.0.1\n")==0)	
 	strcpy(IPServer,"127.0.0.1\n");
