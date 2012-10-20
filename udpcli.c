@@ -189,7 +189,7 @@ int main( int argc, char **argv )
     	inet_ntop( AF_INET, &subnet, network, MAXLINE );
    		//printf("HIIIIIII789\n");
     	
-    	sprintf( temp1, "%lu\n", net );
+    	sprintf( temp1, "%s\n", network );
     	printf("%s\n", temp1 );
 //		inet_aton( configdata[0].data, &ip );
  //	   	inet_aton( sockinfo[x].ntmaddr, &netmask );
