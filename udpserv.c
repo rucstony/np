@@ -13,15 +13,22 @@ typedef struct
 //typedef struct socket_info socket_info;
 void	mydg_echo( int, SA *, socklen_t , SA * );
 
+typedef struct 
+{
+	char data[MAXLINE];
+}config;
+
+
 int main(int argc, char **argv)
 {
 	int					sockfd[10], sockcount = 0, countline = 0, n = 0;
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
-	struct sockaddr_in	*sa, cliaddr, wildaddr;
+	struct sockaddr_in	*sa, cliaddr, wildaddr;	
 	char            	dataline[MAXLINE], ;
-	char 				*configdata[2], *mode = "r";
+	config 				configdata[2]; 
+	char 				*mode = "r";
 	socket_info 		sockinfo[10];
 	FILE 				*ifp;
 
@@ -33,16 +40,20 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	while ( fgets( dataline, MAXLINE, ifp ) != NULL )
+	while ( fgets( dataline,MAXLINE,ifp ) != NULL )
 	{
 		n = strlen( dataline );
+		strcpy( configdata[countline].data, dataline );
+		s = strlen( configdata[ countline ].data );
+
+    	if ( s > 0 && configdata[ countline ].data[ s-1 ] == '\n' )  /* if there's a newline */
+    	{	
+        	configdata[countline].data[s-1] = '\0';          /* truncate the string */
+        }	
 		dataline[n] = 0;
- 
-		configdata[ countline ] = dataline;
-		fputs( dataline, stdout );
-		printf( "reading from config %s \n", configdata[ countline ] ); 
-		countline++;
-	}
+		countline++;	
+	}	
+	
 	printf( "read %d lines\n", countline );
 
 	fclose( ifp );
@@ -64,7 +75,7 @@ int main(int argc, char **argv)
 		bzero( &sa, sizeof( sa ) );
 	
 		sa->sin_family = AF_INET;
-		sa->sin_port = htons( *configdata[0] );
+		sa->sin_port = htons( configdata[0].data );
 		bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
 		printf( "bound---\n" );	
 		printf( "bound----- %d\n", sockcount );
