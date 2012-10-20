@@ -96,17 +96,18 @@ int main( int argc, char **argv )
 		inet_pton( AF_INET, configdata[0].data, &servaddr.sin_addr );
  
 		sockinfo[sockcount].sockfd=-1;
-		sockinfo[sockcount].ip_addr=(SA *)sa;
-		sockinfo[sockcount].ntmaddr=ifi->ifi_ntmaddr;
+		sockinfo[sockcount].ip_addr=sa;
+		sockinfo[sockcount].ntmaddr=(struct sockaddr_in *)ifi->ifi_ntmaddr;
 		/* 
 		sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 		*/
 		printf("sockfd----- %d\n", sockinfo[sockcount].sockfd);
-		printf("IP addr: %s\n", 
+	/*	printf("IP addr: %s\n", 
 				sock_ntop_host( sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ) ); 
 		printf("net addr: %s\n",
         		sock_ntop_host( sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
                 sockcount++;
+	*/
 	}
 	/*
 	if(strcmp(IPServer,"127.0.0.1\n")==0)	
@@ -115,7 +116,7 @@ int main( int argc, char **argv )
 
 	for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
 	{
-		if( strcmp( sock_ntop_host( sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ), configdata[0].data ) == 0 )
+		if( strcmp( sock_ntop_host( (SA *)sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ), configdata[0].data ) == 0 )
 		{
 			loopback = 1;
 		
