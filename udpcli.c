@@ -113,12 +113,20 @@ int main( int argc, char **argv )
 	if(strcmp(IPServer,"127.0.0.1\n")==0)	
 	strcpy(IPServer,"127.0.0.1\n");
 	*/
+
 	int flag = 0;
+
 	for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
 	{
 		printf( "check  IP addr: %s\n",
 				sock_ntop_host( sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ) );
-		printf( "check  configdata[0].data: %s\n",
+	}	
+	return 0;	
+	for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
+	{
+		printf( "check  IP addr: %s\n",
+				sock_ntop_host( sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ) );
+		printf( "check  IPServer: %s\n",
     			configdata[0].data );
 
 	
