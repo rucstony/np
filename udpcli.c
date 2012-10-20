@@ -34,7 +34,7 @@ int main( int argc, char **argv )
 	char  					IPServer[20], IPClient[20], str[INET_ADDRSTRLEN];   /* IP address bound to socket */
 	int 					sockcount=0, s;
 	FILE 					*ifp;
-	char 					*mode = "r";
+	char 					*mode = "r", *temp;
 	
 	ifp = fopen( "client.in", mode );
 
@@ -74,8 +74,7 @@ int main( int argc, char **argv )
 	}	
 	fclose( ifp );
 	sprintf( IPServer, "%s", configdata[0].data );
-	printf( "IPServer:%s\n", IPServer );
-
+	
 	printf("*************************************************\n");
 	printf("	  INTERFACE IP'S 	   						 \n");
 	printf("*************************************************\n");
@@ -106,10 +105,11 @@ int main( int argc, char **argv )
 		/* 
 		sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 		*/
-		printf("IP Address : %s\n", 
-				sock_ntop_host( (SA *)sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) )); 
-		//		sock_ntop_host( (SA *)sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
-    
+		strcpy( temp, sock_ntop_host( (SA *)sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
+		printf("IP Address : %s, Network Mask : %s\n", 
+				sock_ntop_host( (SA *)sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ),
+				temp ); 
+		
         sockcount++;
 	}
 	printf("*************************************************\n");
@@ -160,7 +160,6 @@ int main( int argc, char **argv )
 	}
 	if( !loopback )
 	{
-			printf( "long prefix match logic comes here...\n" );
 		/* Longest prefix matching on output from getifinfo_plus */
 		struct in_addr ip, netmask, subnet, serverip, default_ip;
 		struct in_addr longest_prefix_ip, longest_prefix_netmask;
