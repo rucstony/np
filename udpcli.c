@@ -75,9 +75,9 @@ int main( int argc, char **argv )
 	fclose( ifp );
 	sprintf( IPServer, "%s", configdata[0].data );
 	
-	printf("*************************************************\n");
+	printf("*************************************************************\n");
 	printf("	  INTERFACE IP'S 	   						 \n");
-	printf("*************************************************\n");
+	printf("*************************************************************\n");
 
 	for ( ifihead = ifi = get_ifi_info_plus( AF_INET, 1 );
  		  ifi != NULL;
@@ -106,13 +106,13 @@ int main( int argc, char **argv )
 		sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 		*/
 		strcpy( temp, sock_ntop_host( (SA *)sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
-		printf("IP Address : %s, Network Mask : %s\n", 
+		printf( "IP Address : %s, Network Mask : %s\n", 
 				sock_ntop_host( (SA *)sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ),
 				temp ); 
 		
         sockcount++;
 	}
-	printf("*************************************************\n");
+	printf("*************************************************************\n");
 
 	/*
 	if(strcmp(IPServer,"127.0.0.1\n")==0)	
