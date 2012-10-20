@@ -166,8 +166,11 @@ int main( int argc, char **argv )
 		char *network;
 		//We are converting the fucking ip_addr to string and ntm_addr to string.
 
-		ip = ((struct sockaddr_in *)(sockinfo[0].ip_addr)).sin_addr;
-		netmask =((struct sockaddr_in *)(sockinfo[0].ntmaddr)).sin_addr;
+		struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[0].ip_addr);
+		struct sockaddr_in *se = (struct sockaddr_in *)(sockinfo[0].ntmaddr);
+
+		ip = sd.sin_addr;
+		netmask = se.sin_addr;
 
 //		inet_ntop( AF_INET, &sockinfo[0].ip_addr, ipa, MAXLINE );
 //		inet_ntop( AF_INET, &sockinfo[0].ntmaddr, ntm, MAXLINE );
