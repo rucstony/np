@@ -158,7 +158,7 @@ int main( int argc, char **argv )
 	{
 			printf( "long prefix match logic comes here...\n" );
 		/* Longest prefix matching on output from getifinfo_plus */
-		struct in_addr ip, netmask, subnet, serverip, ip123, ip456;
+		struct in_addr ip, netmask, subnet, serverip, longest_prefix_ip, longest_prefix_netmask;
 		char network1[MAXLINE], network2[MAXLINE], ip1[MAXLINE], nm1[MAXLINE];
 
 		for ( x = 0; sockinfo[x].sockfd != NULL; x++ )
@@ -175,26 +175,23 @@ int main( int argc, char **argv )
 	    	inet_ntop( AF_INET, &ip, ip1, MAXLINE );
 	   		inet_ntop( AF_INET, &netmask, nm1, MAXLINE );
 	   		
-	    	printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", ip1, nm1, network1 );
+//	    	printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", ip1, nm1, network1 );
 
 	    	inet_pton( AF_INET, configdata[0].data, &serverip );
 	    	subnet.s_addr = serverip.s_addr & netmask.s_addr;
 			    	
 			inet_ntop( AF_INET, &subnet, network2, MAXLINE );
 
-			/**/
-			inet_pton( AF_INET, "255.255.255.0", &ip123 );
-			inet_pton( AF_INET, "255.255.255.128", &ip456 );
-	
-	  		/**/
-			printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", configdata[0].data, nm1, network2 );
+//			printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", configdata[0].data, nm1, network2 );
 
 			if( strcmp( network1, network2 ) == 0 )
 			{
 				printf("Wooooo ! On the same network biyatches !!\n");
-				if( ip123.s_addr < ip456.s_addr )
+				if( ( longest_prefix_netmask == NULL ) 
+					|| ( netmask.s_addr > longest_prefix_netmask ) )
 				{
-					printf("GREATER!!!!\n");
+					longest_prefix_netmask = netmask;
+					longest_prefix_ip = ip;		
 				}	
 			}	
 			else
@@ -202,7 +199,13 @@ int main( int argc, char **argv )
 				printf("Not on the same network.. Suck on this..\n");
 			}	
 		}
+		if( longest_prefix_netmask != NULL )
+		{
+			strcpy( IPClient, longest_prefix_ip );
+			printf("Client address selected as : %s which is on same network as Server with IP : %s\n", IPClient, IPServer );
+		}	
 	}
+
 	sockfd[0] = socket( AF_INET, SOCK_DGRAM, 0 );
 
 	bzero( &servaddr, sizeof( servaddr ) );
