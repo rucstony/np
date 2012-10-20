@@ -58,7 +58,8 @@ int main(int argc, char **argv)
 	fclose( ifp );
 
 	for ( ifihead = ifi = get_ifi_info_plus( AF_INET, 1 );
-		ifi != NULL; ifi = ifi->ifi_next) 
+		  ifi != NULL;
+		  ifi = ifi->ifi_next) 
 	{
 
 		sockfd[sockcount]=-1;
@@ -73,18 +74,16 @@ int main(int argc, char **argv)
 
 		bzero( &sa, sizeof( sa ) );
 	
+		sa = ( struct sockaddr_in * ) ifi->ifi_addr;
 		sa.sin_family = AF_INET;
-//		printf("%s\n",configdata[0].data );
 		sa.sin_port = htons( configdata[0].data );
 		bind( sockfd[sockcount], (SA *) &sa, sizeof( sa ) );
-		printf( "bound---\n" );	
-		printf( "bound----- %d\n", sockcount );
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
 		sockinfo[ sockcount ].ip_addr = (SA *)&sa;
 		sockinfo[ sockcount ].ntmaddr = (struct sockaddr_in *)ifi->ifi_ntmaddr;
 		//sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
-		printf( "sockfd----- %d\n", sockinfo[ sockcount ].sockfd );
 
+		printf( "sockfd----- %d\n", sockinfo[ sockcount ].sockfd );
 		printf("  IP addr: %s\n",
 				sock_ntop_host( (SA *)sockinfo[sockcount].ip_addr, sizeof( *sockinfo[sockcount].ip_addr ) ) );
 
