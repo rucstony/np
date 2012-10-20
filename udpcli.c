@@ -120,12 +120,6 @@ int main( int argc, char **argv )
 	{
 		printf( "check  IP addr: %s\n",
 				sock_ntop_host( sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ) );
-	}	
-	return 0;	
-	for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
-	{
-		printf( "check  IP addr: %s\n",
-				sock_ntop_host( sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ) );
 		printf( "check  IPServer: %s\n",
     			configdata[0].data );
 
