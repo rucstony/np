@@ -21,12 +21,12 @@ typedef struct
 
 int main(int argc, char **argv)
 {
-	int					sockfd[10], sockcount = 0, countline = 0, n = 0;
+	int					sockfd[10], sockcount = 0, countline = 0, n = , s;
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
 	struct sockaddr_in	*sa, cliaddr, wildaddr;	
-	char            	dataline[MAXLINE], ;
+	char            	dataline[MAXLINE] ;
 	config 				configdata[2]; 
 	char 				*mode = "r";
 	socket_info 		sockinfo[10];
