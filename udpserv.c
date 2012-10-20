@@ -72,9 +72,8 @@ int main(int argc, char **argv)
 			exit(1);	
 		}	setsockopt( sockfd[sockcount], SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
 
-		bzero( sa, sizeof( *sa ) );
-	
 		sa = ( struct sockaddr_in * )ifi->ifi_addr;
+
 		sa->sin_family = AF_INET;
 		sa->sin_port = htons( ( size_t )configdata[0].data );
 		bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
