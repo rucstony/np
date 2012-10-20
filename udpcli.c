@@ -157,6 +157,7 @@ int main( int argc, char **argv )
 			printf( "bound-port-%d-\n", ss.sin_port );
 
 			printf( "socket bound: %d\n", sockinfo[x].sockfd );
+			break;
 		}
 	}
 	if( !flag )
