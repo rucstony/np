@@ -160,6 +160,7 @@ int main( int argc, char **argv )
 		/* Longest prefix matching on output from getifinfo_plus */
 		struct in_addr ip;
 		struct in_addr netmask;
+		struct in_addr subnet;
 		
 		char temp1[MAXLINE];
 		char temp2[MAXLINE];
@@ -168,9 +169,11 @@ int main( int argc, char **argv )
 
 		struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[0].ip_addr);
 		struct sockaddr_in *se = (struct sockaddr_in *)(sockinfo[0].ntmaddr);
+		struct sockaddr_in *sf = (struct sockaddr_in *)(sockinfo[0].subnetaddr);
 
-		ip = sd.sin_addr;
-		netmask = se.sin_addr;
+		ip = sd->sin_addr;
+		netmask = se->sin_addr;
+		subnet = sf->sin_addr;
 
 //		inet_ntop( AF_INET, &sockinfo[0].ip_addr, ipa, MAXLINE );
 //		inet_ntop( AF_INET, &sockinfo[0].ntmaddr, ntm, MAXLINE );
@@ -178,7 +181,7 @@ int main( int argc, char **argv )
 //		inet_aton( ipa, &ip );
  //	   	inet_aton( ntm, &netmask );
  		// bitwise AND of ip and netmask gives the network
-	   	((struct sockaddr_in *)(sockinfo[0].subnetaddr)).sin_addr.s_addr = ip.s_addr & netmask.s_addr;
+	   	subnet.sin_addr.s_addr = ip.s_addr & netmask.s_addr;
     	inet_ntop( AF_INET, &sockinfo[0].subnetaddr, network, MAXLINE );
     	sprintf( temp1, "%s\n", network );
     	printf("%s\n", temp1 );
