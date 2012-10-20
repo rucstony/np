@@ -187,6 +187,8 @@ int main( int argc, char **argv )
     	printf("HIIIIIII456\n");
     	
     	inet_ntop( AF_INET, sf, network, MAXLINE );
+   		printf("HIIIIIII789\n");
+    	
     	sprintf( temp1, "%s\n", network );
     	printf("%s\n", temp1 );
 //		inet_aton( configdata[0].data, &ip );
