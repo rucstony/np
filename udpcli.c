@@ -21,7 +21,7 @@ typedef struct
 
 int main( int argc, char **argv )
 {
-	int 		 			sockfd[10], n = 0, j = 0, countline = 0, x = 0, loopback = 0 ;
+	int 		 			sockfd[10], n = 0, j = 0, countline = 0, x = 0, loopback = 0, socketIndex = 0;
 	socklen_t				len, slen;
 	struct sockaddr_in		cliaddr, servaddr;
 	const int               on = 1;
@@ -124,7 +124,7 @@ int main( int argc, char **argv )
 		if( strcmp( sock_ntop_host( (SA *)sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ), configdata[0].data ) == 0 )
 		{
 			loopback = 1;
-		
+			socketIndex=x;		
 			strcpy( IPServer, "127.0.0.1\n" );
 			strcpy( IPClient, "127.0.0.1\n" );
 			printf("STATUS : SAME HOST\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
@@ -172,7 +172,8 @@ int main( int argc, char **argv )
 					|| ( netmask.s_addr > longest_prefix_netmask.s_addr ) )
 				{
 					longest_prefix_netmask = netmask;
-					longest_prefix_ip = ip;		
+					longest_prefix_ip = ip;	
+					socketIndex=x;	
 				}	
 			}	
 		}
@@ -187,49 +188,46 @@ int main( int argc, char **argv )
 			/* Assign any arbitrary IP address to the client. */
 			strcpy( IPClient, inet_ntop( AF_INET, &default_ip, network2, MAXLINE ) );
 			printf("STATUS : NOT LOCAL\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
-
+			socketIndex=0;	
 		}	
 	}
 
-	/*
-	if( ( sockinfo[x].sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
+	
+	if( ( sockinfo[socketIndex].sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
 	{
 		printf( "socket error\n" );
 		exit(1);
 	}
 			
-	setsockopt( sockinfo[x].sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
+	setsockopt( sockinfo[socketIndex].sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
 	bzero( &servaddr, sizeof( servaddr ) );
 		 
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = 0;
+	inet_pton( AF_INET, IPClient, &servaddr.sin_addr );
 
-	bind( sockinfo[x].sockfd, (SA *)&servaddr, sizeof( servaddr ) );
-	printf( "bound....%d\n", sockinfo[x].sockfd );	
-			
-	if( getsockname( sockinfo[x].sockfd, (SA *)&ss, &slen ) < 0 )
+	bind( sockinfo[x].sockfd, (SA *)&servaddr, sizeof( servaddr ) ); //causes kernal to bind an ephemeral port to the socket 
+	printf( "bound....%d\n", sockinfo[socketIndex].sockfd );	
+	//to obtain IPClient and assigned ephemeral port number	
+	if( getsockname( sockinfo[socketIndex].sockfd, (SA *)&ss, &slen ) < 0 )
 	{
 		printf( "sockname error\n" );
 		exit(1);
 	}	
+	inet_ntop(AF_INET,ss.sin_addr.s_addr,IPClient, sizeof(ss.sin_addr));	
+	printf( "******************* CLIENT INFO *********************\n" );
+	printf( "IPClient: %s\n",IPClient);
+	printf( "EPHEMERAL PORT: %d\n", ss.sin_port );
+	printf( "socket descriptor : %d\n", sockinfo[socketIndex].sockfd );
 	
-	//printf("IPClient: %s\n",inet_ntop(AF_INET,ss.sin_addr.s_addr,str, sizeof(ss.sin_addr)));
-	
-	printf( "bound-port-%d-\n", ss.sin_port );
 
-	printf( "socket bound: %d\n", sockinfo[x].sockfd );
-	*/
-	
-	sockfd[0] = socket( AF_INET, SOCK_DGRAM, 0 );
-
-	bzero( &servaddr, sizeof( servaddr ) );
+	//setting server struct
+ 	bzero( &servaddr, sizeof( servaddr ) );
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_port = htons( ( size_t )configdata[1].data );
-	inet_pton( AF_INET, configdata[0].data, &servaddr.sin_addr );
-	
-	//sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	
-    dg_cli( stdin, sockfd[0], (SA *)&servaddr, sizeof( servaddr ) );
+	servaddr.sin_port = htons(configdata[1].data); //assigning server port from client.in;
+	inet_pton( AF_INET, IPServer, &servaddr.sin_addr );
+	printf(" calling dg_cli\n");	
+    	dg_cli( stdin, sockinfo[socketIndex].sockfd, (SA *)&servaddr, sizeof( servaddr ) );
 	exit(0);
 }
 
@@ -238,8 +236,21 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 	int 		size;
 	char 		sendline[MAXLINE], recvline[MAXLINE + 1];
 	ssize_t		n;
+	socklen_t                               slen;
+	struct sockaddr_in       ss;
+	char IPServer[20];	
 	
 	connect( sockfd, pservaddr, servlen );
+	if( getpeername( sockfd, (SA *)&ss, &slen ) < 0 )
+        {
+                printf( "peername error\n" );
+                exit(1);
+        }
+	inet_ntop(AF_INET,ss.sin_addr.s_addr,IPServer, sizeof(ss.sin_addr));
+	printf( "******************* SERVER INFO *********************\n" );
+        printf( "IPServer: %s\n",IPServer);
+        printf( "SERVER PORT: %d\n", ss.sin_port );
+        	
 	size = 70000;
 	
 	setsockopt( sockfd, SOL_SOCKET, SO_SNDBUF, &size, sizeof( size ) );
