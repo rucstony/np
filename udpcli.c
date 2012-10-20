@@ -161,36 +161,39 @@ int main( int argc, char **argv )
 		struct in_addr ip, netmask, subnet, serverip;
 		char network1[MAXLINE], network2[MAXLINE], ip1[MAXLINE], nm1[MAXLINE];
 	
-		struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[0].ip_addr);
-		struct sockaddr_in *se = (struct sockaddr_in *)(sockinfo[0].ntmaddr);
-
-		ip = sd->sin_addr;
-		netmask = se->sin_addr;
-
- 	   	subnet.s_addr = ip.s_addr & netmask.s_addr;
-    	
-    	inet_ntop( AF_INET, &subnet, network1, MAXLINE );
-    	inet_ntop( AF_INET, &ip, ip1, MAXLINE );
-   		inet_ntop( AF_INET, &netmask, nm1, MAXLINE );
-   		
-    	printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", ip1, nm1, network1 );
-
-    	inet_pton( AF_INET, configdata[0].data, &serverip );
-    	subnet.s_addr = serverip.s_addr & netmask.s_addr;
-		    	
-		inet_ntop( AF_INET, &subnet, network2, MAXLINE );
-  		
-		printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", configdata[0].data, nm1, network2 );
-
-		if( strcmp( network1, network2 ) == 0 )
+		for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
 		{
-			printf("Wooooo ! On the same network biyatches !!\n");
-		}	
-		else
-		{
-			printf("Not on the same network.. Suck on this..\n");
-		}	
 
+			struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[x].ip_addr);
+			struct sockaddr_in *se = (struct sockaddr_in *)(sockinfo[x].ntmaddr);
+
+			ip = sd->sin_addr;
+			netmask = se->sin_addr;
+
+	 	   	subnet.s_addr = ip.s_addr & netmask.s_addr;
+	    	
+	    	inet_ntop( AF_INET, &subnet, network1, MAXLINE );
+	    	inet_ntop( AF_INET, &ip, ip1, MAXLINE );
+	   		inet_ntop( AF_INET, &netmask, nm1, MAXLINE );
+	   		
+	    	printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", ip1, nm1, network1 );
+
+	    	inet_pton( AF_INET, configdata[0].data, &serverip );
+	    	subnet.s_addr = serverip.s_addr & netmask.s_addr;
+			    	
+			inet_ntop( AF_INET, &subnet, network2, MAXLINE );
+	  		
+			printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", configdata[0].data, nm1, network2 );
+
+			if( strcmp( network1, network2 ) == 0 )
+			{
+				printf("Wooooo ! On the same network biyatches !!\n");
+			}	
+			else
+			{
+				printf("Not on the same network.. Suck on this..\n");
+			}	
+		}
 	}
 	sockfd[0] = socket( AF_INET, SOCK_DGRAM, 0 );
 
