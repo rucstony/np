@@ -169,11 +169,11 @@ int main( int argc, char **argv )
 
 		struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[0].ip_addr);
 		struct sockaddr_in *se = (struct sockaddr_in *)(sockinfo[0].ntmaddr);
-		struct sockaddr_in *sf = (struct sockaddr_in *)(sockinfo[0].subnetaddr);
+//		struct sockaddr_in *sf = (struct sockaddr_in *)(sockinfo[0].subnetaddr);
 
 		ip = sd->sin_addr;
 		netmask = se->sin_addr;
-		subnet = sf->sin_addr;
+//		subnet = sf->sin_addr;
 
 //		inet_ntop( AF_INET, &sockinfo[0].ip_addr, ipa, MAXLINE );
 //		inet_ntop( AF_INET, &sockinfo[0].ntmaddr, ntm, MAXLINE );
