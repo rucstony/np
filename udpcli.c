@@ -195,7 +195,6 @@ int main( int argc, char **argv )
 
 			if( strcmp( network1, network2 ) == 0 )
 			{
-				printf("Wooooo ! On the same network biyatches !!\n");
 				if( ( longest_prefix_netmask.s_addr == NULL ) 
 					|| ( netmask.s_addr > longest_prefix_netmask.s_addr ) )
 				{
@@ -203,16 +202,12 @@ int main( int argc, char **argv )
 					longest_prefix_ip = ip;		
 				}	
 			}	
-			else
-			{
-				printf("Not on the same network.. Suck on this..\n");
-			}	
 		}
 		if( longest_prefix_netmask.s_addr != NULL )
 		{
 			/* Longest prefix address is set as client IP. */
 			strcpy( IPClient, inet_ntop( AF_INET, &longest_prefix_ip, network2, MAXLINE ) );
-			printf("STATUS : LOCAL\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
+			printf("STATUS : LOCAL\nCLIENT ADDRESS (IPClient) : %s\nSERVER ADDRESS (IPServer) : %s\n", IPClient, IPServer );
 		}	
 		else
 		{
