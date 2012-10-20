@@ -7,10 +7,10 @@ typedef char* string;
 
 typedef struct 
 {
-	struct sockaddr  *ip_addr;   /* IP address bound to socket */
+	struct sockaddr_in  *ip_addr;   /* IP address bound to socket */
 	int    sockfd;   /* socket descriptor */
-	struct sockaddr  *ntmaddr;  /* netmask address for IP */
-	struct sockaddr  *subnetaddr;  /* netmask address */
+	struct sockaddr_in  *ntmaddr;  /* netmask address for IP */
+	struct sockaddr_in  *subnetaddr;  /* netmask address */
 }socket_info;
 
 typedef struct 
@@ -20,7 +20,7 @@ typedef struct
 
 int main( int argc, char **argv )
 {
-	int 		 			sockfd[10], n = 0, j = 0, countline = 0;
+	int 		 			sockfd[10], n = 0, j = 0, countline = 0, x = 0, loopback = 0 ;
 	socklen_t				len, slen;
 	struct sockaddr_in		cliaddr, servaddr;
 	const int               on = 1;
@@ -108,28 +108,20 @@ int main( int argc, char **argv )
         		sock_ntop_host( sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
                 sockcount++;
 	}
-	int x = 0;
 	/*
 	if(strcmp(IPServer,"127.0.0.1\n")==0)	
 	strcpy(IPServer,"127.0.0.1\n");
 	*/
 
-	int flag = 0;
-
 	for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
 	{
-		printf( "check  IP addr: %s\n",
-				sock_ntop_host( sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ) );
-		printf( "check  IPServer: %s\n",
-    			configdata[0].data );
-
-	
 		if( strcmp( sock_ntop_host( sockinfo[x].ip_addr, sizeof( *sockinfo[x].ip_addr ) ), configdata[0].data ) == 0 )
 		{
+			loopback = 1;
+		
 			strcpy( IPServer, "127.0.0.1\n" );
 			strcpy( IPClient, "127.0.0.1\n" );
-			flag = 1;
-			printf( "match found---same host---use loop back %s %s \n", IPServer , IPClient );
+			printf( "Match found : same host : Using loopback..\n" );
 
 			if( ( sockinfo[x].sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
 			{
@@ -160,9 +152,10 @@ int main( int argc, char **argv )
 			break;
 		}
 	}
-	if( !flag )
+	if( !loopback )
 	{
 		printf( "long prefix match logic comes here...\n" );
+		/* Longest prefix matching on output from getifinfo_plus */
 	}
 	sockfd[0] = socket( AF_INET, SOCK_DGRAM, 0 );
 
@@ -196,7 +189,7 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 		*/
 		write( sockfd, sendline, strlen( sendline ) );
 		printf("1\n");
-		n=read(sockfd,recvline,MAXLINE);
+		n = read(sockfd,recvline,MAXLINE);
 		/*
 		n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL );
 		*/
