@@ -128,33 +128,6 @@ int main( int argc, char **argv )
 			strcpy( IPServer, "127.0.0.1\n" );
 			strcpy( IPClient, "127.0.0.1\n" );
 			printf("STATUS : SAME HOST\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
-	
-			if( ( sockinfo[x].sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
-			{
-				printf( "socket error\n" );
-				exit(1);
-		    }
-			
-			setsockopt( sockinfo[x].sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
-			bzero( &servaddr, sizeof( servaddr ) );
-		 
-			servaddr.sin_family = AF_INET;
-			servaddr.sin_port = 0;
-
-			bind( sockinfo[x].sockfd, (SA *)&servaddr, sizeof( servaddr ) );
-			printf( "bound....%d\n", sockinfo[x].sockfd );	
-			
-			if( getsockname( sockinfo[x].sockfd, (SA *)&ss, &slen ) < 0 )
-			{
-				printf( "sockname error\n" );
-		        exit(1);
-			}	
-			/*
-			printf("IPClient: %s\n",inet_ntop(AF_INET,ss.sin_addr.s_addr,str, sizeof(ss.sin_addr)));
-			*/
-			printf( "bound-port-%d-\n", ss.sin_port );
-
-			printf( "socket bound: %d\n", sockinfo[x].sockfd );
 			break;
 		}
 	}
@@ -218,15 +191,44 @@ int main( int argc, char **argv )
 		}	
 	}
 
+	/*
+	if( ( sockinfo[x].sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
+	{
+		printf( "socket error\n" );
+		exit(1);
+	}
+			
+	setsockopt( sockinfo[x].sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
+	bzero( &servaddr, sizeof( servaddr ) );
+		 
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = 0;
+
+	bind( sockinfo[x].sockfd, (SA *)&servaddr, sizeof( servaddr ) );
+	printf( "bound....%d\n", sockinfo[x].sockfd );	
+			
+	if( getsockname( sockinfo[x].sockfd, (SA *)&ss, &slen ) < 0 )
+	{
+		printf( "sockname error\n" );
+		exit(1);
+	}	
+	
+	//printf("IPClient: %s\n",inet_ntop(AF_INET,ss.sin_addr.s_addr,str, sizeof(ss.sin_addr)));
+	
+	printf( "bound-port-%d-\n", ss.sin_port );
+
+	printf( "socket bound: %d\n", sockinfo[x].sockfd );
+	*/
+	
 	sockfd[0] = socket( AF_INET, SOCK_DGRAM, 0 );
 
 	bzero( &servaddr, sizeof( servaddr ) );
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons( ( size_t )configdata[1].data );
 	inet_pton( AF_INET, configdata[0].data, &servaddr.sin_addr );
-	/*
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	*/
+	
+	//sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	
     dg_cli( stdin, sockfd[0], (SA *)&servaddr, sizeof( servaddr ) );
 	exit(0);
 }
