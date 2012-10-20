@@ -166,8 +166,8 @@ int main( int argc, char **argv )
 		char *network;
 		//We are converting the fucking ip_addr to string and ntm_addr to string.
 
-		ip = ((struct sockaddr_in)(sockinfo[0].ip_addr)).sin_addr;
-		netmask =((struct sockaddr_in)(sockinfo[0].ntmaddr)).sin_addr;
+		ip = ((struct sockaddr_in *)(sockinfo[0].ip_addr)).sin_addr;
+		netmask =((struct sockaddr_in *)(sockinfo[0].ntmaddr)).sin_addr;
 
 //		inet_ntop( AF_INET, &sockinfo[0].ip_addr, ipa, MAXLINE );
 //		inet_ntop( AF_INET, &sockinfo[0].ntmaddr, ntm, MAXLINE );
@@ -175,7 +175,7 @@ int main( int argc, char **argv )
 //		inet_aton( ipa, &ip );
  //	   	inet_aton( ntm, &netmask );
  		// bitwise AND of ip and netmask gives the network
-	   	((struct sockaddr_in)(sockinfo[0].subnetaddr)).sin_addr.s_addr = ip.s_addr & netmask.s_addr;
+	   	((struct sockaddr_in *)(sockinfo[0].subnetaddr)).sin_addr.s_addr = ip.s_addr & netmask.s_addr;
     	inet_ntop( AF_INET, &sockinfo[0].subnetaddr, network, MAXLINE );
     	sprintf( temp1, "%s\n", network );
     	printf("%s\n", temp1 );
