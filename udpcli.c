@@ -34,11 +34,6 @@ int main( int argc, char **argv )
 	int 					sockcount=0, s;
 	FILE 					*ifp;
 	char 					*mode = "r";
-	
-	if ( argc != 2 )
-	{	
-		err_quit( "usage: udpcli <IPaddress>" );
-	}
 
 	ifp = fopen( "client.in", mode );
 
@@ -70,7 +65,6 @@ int main( int argc, char **argv )
         	configdata[countline].data[s-1] = '\0';          /* truncate the string */
         }	
 		dataline[n] = 0;
-		fputs( dataline, stdout );
 		countline++;	
 		/*
 		free(dataline);
