@@ -34,7 +34,7 @@ int main( int argc, char **argv )
 	int 					sockcount=0, s;
 	FILE 					*ifp;
 	char 					*mode = "r";
-
+	
 	ifp = fopen( "client.in", mode );
 
 	/* Unable to opent the client input file */
@@ -93,7 +93,7 @@ int main( int argc, char **argv )
 		sa = ( struct sockaddr_in * ) ifi->ifi_addr;
 		sa->sin_family = AF_INET;
 		sa->sin_port = htons( ( size_t )configdata[1].data );
-		inet_pton( AF_INET, argv[1], &servaddr.sin_addr );
+		inet_pton( AF_INET, configdata[0].data, &servaddr.sin_addr );
  
 		sockinfo[sockcount].sockfd=-1;
 		sockinfo[sockcount].ip_addr=(SA *)sa;
