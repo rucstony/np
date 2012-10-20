@@ -157,6 +157,33 @@ int main( int argc, char **argv )
 	{
 		printf( "long prefix match logic comes here...\n" );
 		/* Longest prefix matching on output from getifinfo_plus */
+		struct in_addr ip;
+		struct in_addr netmask;
+		struct in_addr network;
+		
+		char temp1[MAXLEN];
+		char temp2[MAXLEN];
+		char *ipa, *ntm;
+		//We are converting the fucking ip_addr to string and ntm_addr to string.
+
+		inet_ntop( AF_INET, &sockinfo[x].ip_addr, ipa, MAXLEN );
+		inet_ntop( AF_INET, &sockinfo[x].ntmaddr, ntm, MAXLEN );
+
+		inet_aton( ipa, &ip );
+ 	   	inet_aton( ntm, &netmask );
+ 
+    	// bitwise AND of ip and netmask gives the network
+    	network.s_addr = ip.s_addr & netmask.s_addr;
+    	sprintf( temp1, "%s\n", inet_ntoa( network ) );
+
+//		inet_aton( configdata[0].data, &ip );
+ //	   	inet_aton( sockinfo[x].ntmaddr, &netmask );
+ 
+    	// bitwise AND of ip and netmask gives the network
+   // 	network.s_addr = ip.s_addr & netmask.s_addr;
+    //	sprintf( temp1, "%s\n", inet_ntoa( network ) );
+ 	
+
 	}
 	sockfd[0] = socket( AF_INET, SOCK_DGRAM, 0 );
 
