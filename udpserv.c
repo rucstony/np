@@ -21,7 +21,7 @@ typedef struct
 
 int main(int argc, char **argv)
 {
-	int					sockfd[10], sockcount = 0, countline = 0, n = , s;
+	int					sockfd[10], sockcount = 0, countline = 0, n = 0, s;
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 		bzero( &sa, sizeof( sa ) );
 	
 		sa->sin_family = AF_INET;
-		sa->sin_port = htons( configdata[0].data );
+		sa->sin_port = htons( atoi( configdata[0].data ) );
 		bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
 		printf( "bound---\n" );	
 		printf( "bound----- %d\n", sockcount );
