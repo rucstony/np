@@ -187,8 +187,8 @@ int main( int argc, char **argv )
 			if( strcmp( network1, network2 ) == 0 )
 			{
 				printf("Wooooo ! On the same network biyatches !!\n");
-				if( ( longest_prefix_netmask == NULL ) 
-					|| ( netmask.s_addr > longest_prefix_netmask ) )
+				if( ( longest_prefix_netmask.s_addr == NULL ) 
+					|| ( netmask.s_addr > longest_prefix_netmask.s_addr ) )
 				{
 					longest_prefix_netmask = netmask;
 					longest_prefix_ip = ip;		
