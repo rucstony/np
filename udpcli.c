@@ -107,8 +107,8 @@ int main( int argc, char **argv )
 		sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 		*/
 		printf("IP Address : %s, Network Mask : %s\n", 
-				sock_ntop_host( sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ), 
-				sock_ntop_host( sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
+				sock_ntop_host( (SA *)sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ), 
+				sock_ntop_host( (SA *)sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
     
         sockcount++;
 	}
