@@ -1,5 +1,6 @@
 #include	"unpifiplus.h"
 #include	<string.h>
+#include 	<arpa/inet.h>
 
 #undef MAXLINE
 #define MAXLINE 65507
