@@ -75,7 +75,8 @@ int main(int argc, char **argv)
 		bzero( &sa, sizeof( sa ) );
 	
 		sa->sin_family = AF_INET;
-		sa->sin_port = htons( configdata[0].data );
+		printf("%s\n",configdata[0].data )
+//		sa->sin_port = htons( configdata[0].data );
 		bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
 		printf( "bound---\n" );	
 		printf( "bound----- %d\n", sockcount );
