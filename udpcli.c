@@ -183,11 +183,10 @@ int main( int argc, char **argv )
  		// bitwise AND of ip and netmask gives the network
 	 	printf("HIIIIIII123\n");
    
-   		unsigned long net;
-	   	net = ip.s_addr & netmask.s_addr;
+ 	   	subnet.s_addr = ip.s_addr & netmask.s_addr;
     	printf("HIIIIIII456\n");
     	
-    	//inet_ntop( AF_INET, sf, network, MAXLINE );
+    	inet_ntop( AF_INET, &subnet, network, MAXLINE );
    		//printf("HIIIIIII789\n");
     	
     	sprintf( temp1, "%lu\n", net );
