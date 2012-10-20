@@ -156,12 +156,13 @@ int main( int argc, char **argv )
 	}
 	if( !loopback )
 	{
-		printf( "long prefix match logic comes here...\n" );
+			printf( "long prefix match logic comes here...\n" );
 		/* Longest prefix matching on output from getifinfo_plus */
 		struct in_addr ip;
 		struct in_addr netmask;
 		struct in_addr subnet;
-		
+		struct in_addr serverip;	
+
 		char temp1[MAXLINE];
 		char temp2[MAXLINE];
 		char network[MAXLINE];
@@ -181,13 +182,13 @@ int main( int argc, char **argv )
    		inet_ntop( AF_INET, &netmask, nm1, MAXLINE );
    		
     	printf("IP : %s\nNet Mask : %s\nNetwork : %s", ip1, nm1, network );
-//		inet_aton( configdata[0].data, &ip );
- //	   	inet_aton( sockinfo[x].ntmaddr, &netmask );
- 
-    	// bitwise AND of ip and netmask gives the network
-   // 	network.s_addr = ip.s_addr & netmask.s_addr;
-    //	sprintf( temp1, "%s\n", inet_ntoa( network ) );
- 	
+
+    	inet_pton( AF_INET, configdata[0].data, &serverip );
+    	subnet.s_addr = serverip.s_addr & netmask.s_addr;
+		    	
+		inet_ntop( AF_INET, &subnet, network, MAXLINE );
+  		
+		printf("IP : %s\nNet Mask : %s\nNetwork : %s", serverip, nm1, network );
 
 	}
 	sockfd[0] = socket( AF_INET, SOCK_DGRAM, 0 );
