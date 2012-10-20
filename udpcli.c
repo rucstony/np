@@ -181,7 +181,7 @@ int main( int argc, char **argv )
 //		inet_aton( ipa, &ip );
  //	   	inet_aton( ntm, &netmask );
  		// bitwise AND of ip and netmask gives the network
-	   	subnet.sin_addr.s_addr = ip.s_addr & netmask.s_addr;
+	   	subnet.s_addr = ip.s_addr & netmask.s_addr;
     	inet_ntop( AF_INET, &sockinfo[0].subnetaddr, network, MAXLINE );
     	sprintf( temp1, "%s\n", network );
     	printf("%s\n", temp1 );
