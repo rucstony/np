@@ -99,11 +99,6 @@ int main(int argc, char **argv)
 
 
 	}
-	exit(0);
-}
-/* end udpserv3 */
-
-{
 
 	maxfdp1 = -1;
 	FD_ZERO( &allset );
@@ -144,9 +139,9 @@ int main(int argc, char **argv)
 	}
 
 
-
+	exit(0);
 }
-
+/* end udpserv3 */
 
 /* include mydg_echo */
 void
