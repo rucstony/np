@@ -22,7 +22,7 @@ typedef struct
 int main(int argc, char **argv)
 {
 	int					sockfd[10], sockcount = 0, countline = 0, n = 0, s, nready, maxfdp1;
-	fd_set 				rset;
+	fd_set 				rset, allset;
 	socklen_t			len;
 	const int			on = 1;
 	pid_t				pid;
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 	for( i = 0; i<sockcount; i++ )
 	{
 		FD_SET( sockinfo[ i ].sockfd, &allset );	
-		if( sockinfo[ i ].sockfd > maxfdp )
+		if( sockinfo[ i ].sockfd > maxfdp1 )
 		{
 			maxfdp1 = sockinfo[ i ].sockfd;
 		}	
