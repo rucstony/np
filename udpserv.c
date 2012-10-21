@@ -21,7 +21,7 @@ typedef struct
 
 int main(int argc, char **argv)
 {
-	int					sockfd[10], sockcount = 0, countline = 0, n = 0, s, nready, maxfdp1;
+	int					sockfd[10], sockcount = 0, countline = 0, n = 0, s, nready, maxfdp1, i;
 	fd_set 				rset, allset;
 	socklen_t			len;
 	const int			on = 1;
