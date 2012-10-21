@@ -240,13 +240,18 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 	struct sockaddr_in       ss;
 	char IPServer[20];	
 	
-	connect( sockfd, pservaddr, servlen );
+	if( connect( sockfd, pservaddr, servlen ) < 0 )
+	{
+		printf( "Error in connecting to server..\n" );
+		exit(1);
+	}	
 	if( getpeername( sockfd, (SA *)&ss, &slen ) < 0 )
         {
                 printf( "peername error\n" );
                 exit(1);
         }
-	inet_ntop(AF_INET,ss.sin_addr.s_addr,IPServer, sizeof(ss.sin_addr));
+	inet_ntop( AF_INET, ss.sin_addr.s_addr, IPServer, sizeof( ss.sin_addr ) );
+
 	printf( "******************* SERVER INFO *********************\n" );
         printf( "IPServer: %s\n",IPServer);
         printf( "SERVER PORT: %d\n", ss.sin_port );
@@ -269,7 +274,7 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 		*/
 		recvline[ n ] = 0;
 		fputs( recvline, stdout );
-		printf( "received %d bytes\n", n );
+		printf( "received : %s \n", recvline );
 	}
 }
 
