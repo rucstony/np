@@ -7,6 +7,7 @@ typedef struct
 	int    sockfd;   /* socket descriptor */
 	struct sockaddr_in  *ntmaddr;  /* netmask address for IP */
 	struct sockaddr_in  *subnetaddr;  /* netmask address */
+
 }socket_info;
 
 //typedef struct socket_info socket_info;
@@ -20,12 +21,14 @@ typedef struct
 
 int main(int argc, char **argv)
 {
-	int					sockfd[10], sockcount = 0, countline = 0, n = 0, s;
+	int					sockfd[10], sockcount = 0, countline = 0, n = 0, s, nready, maxfdp1;
+	fd_set 				rset;
+	socklen_t			len;
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
 	struct sockaddr_in	*sa, cliaddr, wildaddr;	
-	char            	dataline[MAXLINE] ;
+	char            	dataline[MAXLINE], mesg[MAXLINE];
 	config 				configdata[2]; 
 	char 				*mode = "r";
 	socket_info 		sockinfo[10];
@@ -61,7 +64,6 @@ int main(int argc, char **argv)
 		  ifi != NULL;
 		  ifi = ifi->ifi_next) 
 	{
-
 		sockfd[sockcount]=-1;
 		printf("bound----- %d\n",sockcount);
 		
@@ -94,10 +96,57 @@ int main(int argc, char **argv)
 		//			exit(0);		/* never executed */
 		//		}
 		/* end udpserv1 */
+
+
 	}
 	exit(0);
 }
 /* end udpserv3 */
+
+{
+
+	maxfdp1 = -1;
+	FD_ZERO( &allset );
+	for( i = 0; i<sockcount; i++ )
+	{
+		FD_SET( sockinfo[ i ].sockfd, &allset );	
+		if( sockinfo[ i ].sockfd > maxfdp )
+		{
+			maxfdp1 = sockinfo[ i ].sockfd;
+		}	
+	}	
+
+	for ( ; ; ) 
+	{
+		rset = allset;
+		if ( ( nready = select( maxfdp1 + 1, &rset, NULL, NULL, NULL ) ) < 0 ) 
+		{
+			if ( errno == EINTR )
+				continue;		/* back to for() */
+			else
+				err_sys("select error");
+		}
+
+		for( i = 0; i<sockcount; i++ )
+		{
+			if( FD_ISSET( sockinfo[ i ].sockfd, &rset ) )
+			{
+				// Logic to add a connection from 
+				len = sizeof( cliaddr );
+				n = recvfrom( sockinfo[ i ].sockfd, mesg, MAXLINE, 0, (SA *) &cliaddr, &len );
+				printf("Recieved message from client : %s\n", mesg );
+				
+				inet_ntop( AF_INET, &cliaddr.sin_addr, mesg, MAXLINE );
+				printf("Client address : %s\n",mesg );
+	//			sendto(udpfd, mesg, n, 0, (SA *) &cliaddr, len);
+			}	
+		}
+	}
+
+
+
+}
+
 
 /* include mydg_echo */
 void
