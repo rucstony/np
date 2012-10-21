@@ -233,12 +233,12 @@ int main( int argc, char **argv )
 
 void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 {
-	int 		size;
-	char 		sendline[MAXLINE], recvline[MAXLINE + 1];
-	ssize_t		n;
-	socklen_t                               slen;
-	struct sockaddr_in       ss;
-	char IPServer[20];	
+	int 					size;
+	char 					sendline[MAXLINE], recvline[MAXLINE + 1];
+	ssize_t					n;
+	socklen_t 				slen;
+	struct sockaddr_in      ss;
+	char 					IPServer[20];	
 	
 	if( connect( sockfd, pservaddr, servlen ) < 0 )
 	{
@@ -246,11 +246,11 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 		exit(1);
 	}	
 	if( getpeername( sockfd, (SA *)&ss, &slen ) < 0 )
-        {
-                printf( "peername error\n" );
-                exit(1);
-        }
-	inet_ntop( AF_INET, ss.sin_addr.s_addr, IPServer, sizeof( ss.sin_addr ) );
+	{
+		printf( "peername error\n" );
+		exit(1);
+	}
+	inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE );
 
 	printf( "******************* SERVER INFO *********************\n" );
         printf( "IPServer: %s\n",IPServer);
