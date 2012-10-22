@@ -209,6 +209,8 @@ int main( int argc, char **argv )
 
 	bind( sockfd1, (SA *)&cliaddr, sizeof( cliaddr ) ); //causes kernal to bind an ephemeral port to the socket 
 	printf( "bound....%d\n", sockfd1 );	
+
+	printf( "IPClient123: %s\n", inet_ntop( AF_INET, &(cliaddr.sin_addr), IPClient, MAXLINE ) );
 	
 	//to obtain IPClient and assigned ephemeral port number	
 	if( getsockname( sockfd1, (SA *)&ss, &slen ) < 0 )
@@ -216,6 +218,7 @@ int main( int argc, char **argv )
 		printf( "sockname error\n" );
 		exit(1);
 	}	
+
 	inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE );	
 	printf( "******************* CLIENT INFO *********************\n" );
 	printf( "IPClient: %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ) );
