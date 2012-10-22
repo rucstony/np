@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
-	struct sockaddr_in	*sa, cliaddr, wildaddr, ss;	
+	struct sockaddr_in	sa, cliaddr, wildaddr, ss;	
 	char            	dataline[MAXLINE], mesg[MAXLINE], IPClient[MAXLINE];
 	config 				configdata[2]; 
 	char 				*mode = "r";
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 		sa->sin_family = AF_INET;
 //		sa->sin_port = htons( ( size_t )configdata[0].data );
 		sa->sin_port = htons( 123456 );
-
+		printf("%d\n", sa->sin_port );
 //		servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		
 		int b = bind( sockfd[sockcount], (SA *) sa, sizeof( struct sockaddr_in ) );
