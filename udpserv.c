@@ -77,7 +77,8 @@ int main(int argc, char **argv)
 		sa = ( struct sockaddr_in * )ifi->ifi_addr;
 
 		sa->sin_family = AF_INET;
-		sa->sin_port = htonl( ( size_t )configdata[0].data );
+	//	sa->sin_port = htonl( ( size_t )configdata[0].data );
+		sa->sin_port = htonl( 12345 );
 		
 		bind( sockfd[sockcount], (SA *) sa, sizeof( struct sockaddr_in ) );
 
