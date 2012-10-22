@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
-	struct sockaddr_in	sa, cliaddr, wildaddr, ss;	
+	struct sockaddr_in	*sa, cliaddr, wildaddr, ss;	
 	char            	dataline[MAXLINE], mesg[MAXLINE], IPClient[MAXLINE];
 	config 				configdata[2]; 
 	char 				*mode = "r";
