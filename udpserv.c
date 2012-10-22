@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
 		sa->sin_family = AF_INET;
 //		sa->sin_port = htons( ( size_t )configdata[0].data );
-		sa->sin_port = htons( 77777 );
+		sa->sin_port = htons( 123456 );
 
 //		servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		
