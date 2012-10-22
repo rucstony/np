@@ -246,16 +246,21 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 	struct sockaddr_in      ss;
 	char 					IPServer[20];	
 	
+
 	if( connect( sockfd, pservaddr, servlen ) < 0 )
 	{
 		printf( "Error in connecting to server..\n" );
 		exit(1);
 	}	
+
+	slen = sizeof( ss ); 
+
 	if( getpeername( sockfd, (SA *)&ss, &slen ) < 0 )
 	{
 		printf( "peername error\n" );
 		exit(1);
 	}
+	
 	inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE );
 
 	printf( "******************* SERVER INFO *********************\n" );
