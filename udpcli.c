@@ -233,7 +233,7 @@ int main( int argc, char **argv )
 	servaddr.sin_port = htons(configdata[1].data); //assigning server port from client.in;
 	inet_pton( AF_INET, IPServer, &servaddr.sin_addr );
 	printf(" calling dg_cli\n");	
-    	dg_cli( stdin, sockinfo[socketIndex].sockfd, (SA *)&servaddr, sizeof( servaddr ) );
+    	dg_cli( stdin, sockfd1, (SA *)&servaddr, sizeof( servaddr ) );
 	exit(0);
 }
 
@@ -260,7 +260,7 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 		printf( "peername error\n" );
 		exit(1);
 	}
-	
+
 	inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE );
 
 	printf( "******************* SERVER INFO *********************\n" );

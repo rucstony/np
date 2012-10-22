@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 		sockfd[sockcount]=-1;
 		printf("bound----- %d\n",sockcount);
 		
-		int x=0;	/*4bind unicast address */
+		int x = 0;	/*4bind unicast address */
 		if( ( sockfd[ sockcount ] = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
 		{
 			printf( "socket error\n" );	
