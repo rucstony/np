@@ -218,7 +218,7 @@ int main( int argc, char **argv )
 	}	
 	inet_ntop( AF_INET, ss.sin_addr, IPClient, MAXLINE );	
 	printf( "******************* CLIENT INFO *********************\n" );
-	printf( "IPClient: %s\n",IPClient);
+	printf( "IPClient: %s\n", inet_ntop( AF_INET, ss.sin_addr, IPClient, MAXLINE ) );
 	printf( "EPHEMERAL PORT: %d\n", ss.sin_port );
 	printf( "socket descriptor : %d\n", sockfd );
 	
