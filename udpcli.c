@@ -212,6 +212,7 @@ int main( int argc, char **argv )
 
 	printf( "IPClient123: %s\n", inet_ntop( AF_INET, &(cliaddr.sin_addr), IPClient, MAXLINE ) );
 	
+	slen = sizeof( ss );
 	//to obtain IPClient and assigned ephemeral port number	
 	if( getsockname( sockfd1, (SA *)&ss, &slen ) < 0 )
 	{
