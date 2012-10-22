@@ -121,12 +121,14 @@ int main(int argc, char **argv)
 			else
 				err_sys("select error");
 		}
-
+		printf("Entered into the select\n");
 		for( i = 0; i<sockcount; i++ )
 		{
 			if( FD_ISSET( sockinfo[ i ].sockfd, &rset ) )
 			{
 				// Logic to add a connection from 
+				printf("Entered into the FD_ISSET\n");
+
 				len = sizeof( cliaddr );
 				n = recvfrom( sockinfo[ i ].sockfd, mesg, MAXLINE, 0, (SA *) &cliaddr, &len );
 				printf("Recieved message from client : %s\n", mesg );
