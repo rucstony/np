@@ -19,6 +19,9 @@ typedef struct
 	char data[MAXLINE];
 }config;
 
+void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] );
+
+
 int main( int argc, char **argv )
 {
 	int 		 			sockfd[10], n = 0, j = 0, countline = 0, x = 0, loopback = 0, socketIndex = 0;
@@ -235,11 +238,11 @@ int main( int argc, char **argv )
 	servaddr.sin_port = htonl(12345); //assigning server port from client.in;
 	inet_pton( AF_INET, IPServer, &servaddr.sin_addr );
 	printf(" calling dg_cli\n");	
-    	dg_cli( stdin, sockfd1, (SA *)&servaddr, sizeof( servaddr ) );
+    	dg_cli( stdin, sockfd1, (SA *)&servaddr, sizeof( servaddr ), configdata );
 	exit(0);
 }
 
-void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
+void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] )
 {
 	int 					size;
 	char 					sendline[MAXLINE], recvline[MAXLINE + 1];
@@ -274,12 +277,12 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 	setsockopt( sockfd, SOL_SOCKET, SO_SNDBUF, &size, sizeof( size ) );
 	setsockopt( sockfd, SOL_SOCKET, SO_RCVBUF, &size, sizeof( size ) );
 	
-	while ( fgets( sendline, MAXLINE, fp ) != NULL )
-	{
+	//while ( fgets( sendline, MAXLINE, fp ) != NULL )
+	//{
 		/*
 		sendto( sockfd, sendline, MAXLINE, 0, pservaddr, servlen );
 		*/
-		write( sockfd, sendline, strlen( sendline ) );
+		write( sockfd, configdata[2].data, strlen( configdata[2].data ) + 1 );
 		n = read(sockfd,recvline,MAXLINE);
 		/*
 		n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL );
@@ -287,6 +290,6 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 		recvline[ n ] = 0;
 		fputs( recvline, stdout );
 		printf( "received : %s \n", recvline );
-	}
+	//}
 }
 
