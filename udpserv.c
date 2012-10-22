@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 			exit(1);
 		}	
 
-		printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE );	
+		printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ));	
 
 
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
