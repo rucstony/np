@@ -192,33 +192,35 @@ int main( int argc, char **argv )
 		}	
 	}
 
+	int sockfd;
 	
-	if( ( sockinfo[socketIndex].sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
+	if( ( sockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
 	{
 		printf( "socket error\n" );
 		exit(1);
 	}
 			
-	setsockopt( sockinfo[socketIndex].sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
-	bzero( &servaddr, sizeof( servaddr ) );
+	setsockopt( sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
+	bzero( &cliaddr, sizeof( cliaddr ) );
 		 
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_port = 0;
-	inet_pton( AF_INET, IPClient, &servaddr.sin_addr );
+	cliaddr.sin_family = AF_INET;
+	cliaddr.sin_port = 0;
+	inet_pton( AF_INET, IPClient, &cliaddr.sin_addr );
 
-	bind( sockinfo[x].sockfd, (SA *)&servaddr, sizeof( servaddr ) ); //causes kernal to bind an ephemeral port to the socket 
-	printf( "bound....%d\n", sockinfo[socketIndex].sockfd );	
+	bind( sockfd, (SA *)&cliaddr, sizeof( cliaddr ) ); //causes kernal to bind an ephemeral port to the socket 
+	printf( "bound....%d\n", sockfd );	
+	
 	//to obtain IPClient and assigned ephemeral port number	
-	if( getsockname( sockinfo[socketIndex].sockfd, (SA *)&ss, &slen ) < 0 )
+	if( getsockname( sockfd, (SA *)&ss, &slen ) < 0 )
 	{
 		printf( "sockname error\n" );
 		exit(1);
 	}	
-	inet_ntop(AF_INET,ss.sin_addr.s_addr,IPClient, sizeof(ss.sin_addr));	
+	inet_ntop( AF_INET, ss.sin_addr, IPClient, MAXLINE );	
 	printf( "******************* CLIENT INFO *********************\n" );
 	printf( "IPClient: %s\n",IPClient);
 	printf( "EPHEMERAL PORT: %d\n", ss.sin_port );
-	printf( "socket descriptor : %d\n", sockinfo[socketIndex].sockfd );
+	printf( "socket descriptor : %d\n", sockfd );
 	
 
 	//setting server struct
