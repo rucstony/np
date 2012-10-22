@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 		}	
 
 		printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ));	
-
+		printf( "SERVER PORT: %d\n", ss.sin_port );
 
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
 		sockinfo[ sockcount ].ip_addr = (SA *)sa;
