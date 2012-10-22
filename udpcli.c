@@ -278,7 +278,6 @@ void dg_cli( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen )
 		sendto( sockfd, sendline, MAXLINE, 0, pservaddr, servlen );
 		*/
 		write( sockfd, sendline, strlen( sendline ) );
-		printf("1\n");
 		n = read(sockfd,recvline,MAXLINE);
 		/*
 		n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL );
