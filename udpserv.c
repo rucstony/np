@@ -78,7 +78,8 @@ int main(int argc, char **argv)
 
 		sa->sin_family = AF_INET;
 		sa->sin_port = htons( ( size_t )configdata[0].data );
-		printf( "BOUND SOCKET BIND RETURN VALUE : %d\n", bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) ) );
+		int b = bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
+		printf( "BOUND SOCKET BIND RETURN VALUE : %d\n", b );
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
 		sockinfo[ sockcount ].ip_addr = (SA *)sa;
 		sockinfo[ sockcount ].ntmaddr = (struct sockaddr_in *)ifi->ifi_ntmaddr;
