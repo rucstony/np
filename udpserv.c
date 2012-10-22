@@ -23,12 +23,12 @@ int main(int argc, char **argv)
 {
 	int					sockfd[10], sockcount = 0, countline = 0, n = 0, s, nready, maxfdp1, i;
 	fd_set 				rset, allset;
-	socklen_t			len;
+	socklen_t			len, slen;
 	const int			on = 1;
 	pid_t				pid;
 	struct ifi_info		*ifi, *ifihead;
-	struct sockaddr_in	*sa, cliaddr, wildaddr;	
-	char            	dataline[MAXLINE], mesg[MAXLINE];
+	struct sockaddr_in	*sa, cliaddr, wildaddr, ss;	
+	char            	dataline[MAXLINE], mesg[MAXLINE], IPClient[MAXLINE];
 	config 				configdata[2]; 
 	char 				*mode = "r";
 	socket_info 		sockinfo[10];
@@ -78,8 +78,20 @@ int main(int argc, char **argv)
 
 		sa->sin_family = AF_INET;
 		sa->sin_port = htons( ( size_t )configdata[0].data );
+		
 		int b = bind( sockfd[sockcount], (SA *) sa, sizeof( *sa ) );
-		printf( "BOUND SOCKET BIND RETURN VALUE : %d\n", b );
+		//
+		slen = sizeof( ss );
+
+		if( getsockname( sockfd[sockcount], (SA *)&ss, &slen ) < 0 )
+		{
+			printf( "sockname error\n" );
+			exit(1);
+		}	
+
+		printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE );	
+
+
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
 		sockinfo[ sockcount ].ip_addr = (SA *)sa;
 		sockinfo[ sockcount ].ntmaddr = (struct sockaddr_in *)ifi->ifi_ntmaddr;
