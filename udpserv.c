@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 				
 				inet_ntop( AF_INET, &cliaddr.sin_addr, mesg, MAXLINE );
 				printf("Client address : %s\n",mesg );
-				sendto( sockinfo[ i ].sockfd, mesg, n, 0, (SA *) &cliaddr, len);
+				sendto( sockinfo[ i ].sockfd, mesg, sizeof(mesg), 0, (SA *) &cliaddr, len);
 			}	
 		}
 	}
