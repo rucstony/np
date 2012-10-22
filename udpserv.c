@@ -77,13 +77,10 @@ int main(int argc, char **argv)
 		sa = ( struct sockaddr_in * )ifi->ifi_addr;
 
 		sa->sin_family = AF_INET;
-//		sa->sin_port = htons( ( size_t )configdata[0].data );
-		sa->sin_port = htons( 123456 );
-		printf("%d\n", sa->sin_port );
-//		servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+		sa->sin_port = htonl( ( size_t )configdata[0].data );
 		
-		int b = bind( sockfd[sockcount], (SA *) sa, sizeof( struct sockaddr_in ) );
-		//
+		bind( sockfd[sockcount], (SA *) sa, sizeof( struct sockaddr_in ) );
+
 		slen = sizeof( ss );
 
 		if( getsockname( sockfd[sockcount], (SA *)&ss, &slen ) < 0 )

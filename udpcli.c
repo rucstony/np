@@ -96,7 +96,7 @@ int main( int argc, char **argv )
 
 		sa = ( struct sockaddr_in * ) ifi->ifi_addr;
 		sa->sin_family = AF_INET;
-		sa->sin_port = htons( ( size_t )configdata[1].data );
+		sa->sin_port = htonl( ( size_t )configdata[1].data );
 		inet_pton( AF_INET, configdata[0].data, &servaddr.sin_addr );
  
 		sockinfo[sockcount].sockfd=-1;
