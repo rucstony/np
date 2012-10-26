@@ -336,7 +336,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 //	n = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, pservaddr, servlen );
 
-	while( n = dg_recieve( sockfd, recvline, MAXLINE, &ss, ss ) > 0 )
+	while( n = dg_recieve( sockfd, recvline, MAXLINE, &ss, slen ) > 0 )
 	{
 		printf("Received datagram from server child of %d bytes..\n", n );	
 	}	
