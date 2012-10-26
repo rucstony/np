@@ -231,9 +231,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	}	
 
 	printf( "Reading from the newly connected socket.\n" );
-	n = read( connfd, recvline, MAXLINE );
-	printf("Receieved data : %s\n",recvline );
-	if( strcmp( recvline, "ACK\n" ) == 0 )
+	n = read( connfd, mesg, MAXLINE );
+	printf("Receieved data : %s\n",mesg );
+	if( strcmp( mesg, "ACK\n" ) == 0 )
 	{
 		printf("ACK recieved\n");
 	}	
