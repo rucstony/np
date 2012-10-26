@@ -255,6 +255,8 @@ static void sig_alrm( int signo )
 ssize_t dg_send( int fd, const void *outbuff, size_t outbytes, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
 {
 	ssize_t	n;
+
+	printf("Calling dg_send_packet() routine..\n");
 	n = dg_send_packet( fd, outbuff, outbytes, inbuff, 
 						inbytes, destaddr, destlen );
 	if ( n < 0 )
@@ -336,6 +338,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
 	{
 		/* Pick the data from the file  */ 
+		printf("Calling dg_send() with picked up data..\n");
 		bytes = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
 	}
 
