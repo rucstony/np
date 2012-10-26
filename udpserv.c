@@ -229,8 +229,15 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		printf("ERROR IN SENDTO : %d ",errno);
 		exit(0);
 	}	
-	
-	/*	for ( ; ; ) 
+
+	printf( "Reading from the newly connected socket.\n" );
+	n = read( connfd, recvline, MAXLINE );
+	printf("Receieved data : %s\n",recvline );
+	if( strcmp( recvline, "ACK\n" ) == 0 )
+	{
+		printf("ACK recieved\n");
+	}	
+		/*	for ( ; ; ) 
 	{
 		len = clilen;
 		n = recvfrom( sockfd, mesg, MAXLINE, 0, pcliaddr, &len );

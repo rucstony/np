@@ -284,28 +284,30 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		/*
 		sendto( sockfd, sendline, MAXLINE, 0, pservaddr, servlen );
 		*/
-		write( sockfd, configdata[2].data, strlen( configdata[2].data ) + 1 );
-		n = read( sockfd, recvline, MAXLINE );
 		/*
 		n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL );
 		*/
-		printf( "RECIEVED DATAGRAM\n" );
-		
-		recvline[ n ] = 0;
-		fputs( recvline, stdout );
-		printf( "Ephemeral Port Number Of Server Child : %s \n", recvline );
+	
+	write( sockfd, configdata[2].data, strlen( configdata[2].data ) + 1 );
+	n = read( sockfd, recvline, MAXLINE );
+	
+	recvline[ n ] = 0;
+	fputs( recvline, stdout );
+	printf( "Ephemeral Port Number Of Server Child : %s \n", recvline );
 		
 	ss.sin_port = htonl( (uint16_t) atoi( recvline ) ); //assigning server port from client.in;
 
-		printf( "PORT NUMBER USED TO RECONNECT : %d\n", ss.sin_port );
-	
+	printf( "Reconnecting on server child port number %d...\n", ss.sin_port );
 	slen = sizeof( ss );
-	
 	if( connect( sockfd, &ss, slen ) < 0 )
 	{
 		printf( "Error in connecting to server..\n" );
 		exit(1);
 	}	
+
+	printf("Sending Acknowledgement to server using reconnected socket...\n");
+	write( sockfd, "ACK\n", strlen( "ACK\n" ) + 1 );
+
 	//}
 }
 
