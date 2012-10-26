@@ -156,8 +156,8 @@ int main(int argc, char **argv)
 				n = recvfrom( sockinfo[ i ].sockfd, mesg, MAXLINE, 0, (SA *) &cliaddr, &len );
 		
 				printf("Recieved message from client : %s\n", mesg );
-				inet_ntop( AF_INET, &cliaddr.sin_addr, mesg, MAXLINE );
-				printf("Client address : %s\n",mesg );
+				inet_ntop( AF_INET, &cliaddr.sin_addr, IPClient, MAXLINE );
+				printf("Client address : %s\n",IPClient );
 		
 				/* Returns which interface onto which the client has connected. */ 
 				if( getsockname( sockinfo[ i ].sockfd, (SA *)&ss, &slen ) < 0 )
