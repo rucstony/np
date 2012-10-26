@@ -219,7 +219,11 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	}	
 
 	sprintf( mesg, "%d\n", ss.sin_port );
-	sendto( sockfd, mesg, sizeof( mesg ), 0, (SA *) &cliaddr, len);
+	if( sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen) < 0 ) 
+	{
+		printf("ERROR IN SENDTO : %d ",errno);
+		exit(0);
+	}	
 	
 
 	/*	for ( ; ; ) 

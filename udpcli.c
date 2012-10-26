@@ -289,12 +289,13 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		/*
 		n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL );
 		*/
+		printf( "RECIEVED DATAGRAM\n" );
 		
 		recvline[ n ] = 0;
 		fputs( recvline, stdout );
 		printf( "Ephemeral Port Number Of Server Child : %s \n", recvline );
 		
-		pservaddr.sin_port = htonl( (uint16_t) atoi( recvline ) ); //assigning server port from client.in;
+	ss.sin_port = htonl( (uint16_t) atoi( recvline ) ); //assigning server port from client.in;
 
 		printf( "PORT NUMBER USED TO RECONNECT : %d\n", pservaddr.sin_port );
 	
