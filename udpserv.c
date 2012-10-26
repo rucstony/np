@@ -218,14 +218,31 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		exit(1);
 	}	
 
+	if( getpeername( connfd, (SA *)&ss, &slen ) < 0 )
+	{
+		printf( "peername error\n" );
+		exit(1);
+	}
+
+	inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE );
+
+	printf( "******************* SERVER INFO *********************\n" );
+        printf( "IPClient: %s\n",IPServer);
+        printf( "Client PORT: %d\n", ss.sin_port );
+        	
+
+
 	sprintf( mesg, "%d\n", ss.sin_port );
+	
+	//sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen);
+
+	
 	if( sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen) < 0 ) 
 	{
 		printf("ERROR IN SENDTO : %d ",errno);
 		exit(0);
 	}	
 	
-
 	/*	for ( ; ; ) 
 	{
 		len = clilen;
