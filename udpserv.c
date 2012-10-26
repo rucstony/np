@@ -244,7 +244,7 @@ sendagain:
 	alarm(0);		
 
 	rtt_stop(&rttinfo, rtt_ts(&rttinfo) - recvhdr.ts);
-	return(n - sizeof(struct hdr));	/* return size of received datagram */
+	return(1);	/* return size of received datagram */
 }
 
 static void sig_alrm( int signo )
@@ -339,7 +339,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	{
 		/* Pick the data from the file  */ 
 		printf("Calling dg_send() with picked up data..\n");
-		bytes = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
+		bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
 	}
 
 
