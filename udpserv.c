@@ -340,7 +340,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
 		printf("Calling dg_send() with picked up data..\n");
-		bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
+		send( connfd, sendline, strlen( sendline ), 0 );
+		//bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
 //	}
 
 
