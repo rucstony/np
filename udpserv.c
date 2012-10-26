@@ -177,9 +177,7 @@ int main(int argc, char **argv)
 
 	exit(0);
 }
-/* end udpserv3 */
 
-/* include mydg_echo */
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen)
 {
 	int						n;
@@ -220,8 +218,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 	sprintf( mesg, "%d\n", ss.sin_port );
 	
-	//sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen);
-
 	printf("THIS IS THE MESSAGE I AM SENDING TO CLIENT : %s\n", mesg );
 
 	if( sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen) < 0 ) 
@@ -233,20 +229,11 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	printf( "Reading from the newly connected socket.\n" );
 	n = read( connfd, mesg, MAXLINE );
 	printf("Receieved data : %s\n",mesg );
-	if( strcmp( mesg, "ACK\n" ) == 0 )
+	
+	if( n > 0 && strcmp( mesg, "ACK\n" ) == 0 )
 	{
-		printf("ACK recieved\n");
+		printf("ACK recieved..\n");
+		printf("Closing the listening socket on parent..\n");
+		close( sockfd );
 	}	
-		/*	for ( ; ; ) 
-	{
-		len = clilen;
-		n = recvfrom( sockfd, mesg, MAXLINE, 0, pcliaddr, &len );
-		printf( "Recieved data...1\n" );
-
-		printf( "Sending...\n" );
-		sendto( sockfd, mesg, n, 0, pcliaddr, len );
-		printf( "Sending...\n" );
-	}
-*/
 }
-/* end mydg_echo */
