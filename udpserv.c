@@ -1,5 +1,19 @@
-/* include udpserv1 */
 #include        "unpifiplus.h"
+#include		"unprtt.h"
+#include		<setjmp.h>
+
+static struct rtt_info   rttinfo;
+static int				 rttinit = 0;
+static struct msghdr	 msgsend, msgrecv;	/* assumed init to 0 */
+
+static struct hdr 
+{
+  uint32_t	seq;	/* sequence # */
+  uint32_t	ts;		/* timestamp when sent */
+} sendhdr, recvhdr;
+
+static void	sig_alrm( int signo );
+static sigjmp_buf	jmpbuf;
 
 typedef struct 
 {
@@ -166,7 +180,7 @@ int main(int argc, char **argv)
 				//sendto( sockinfo[ i ].sockfd, mesg, sizeof( mesg ), 0, (SA *) &cliaddr, len);
 				if ( ( pid = fork() ) == 0 ) 
 				{             /* child */
-					mydg_echo( sockinfo[ i ].sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr) );
+					mydg_echo( sockinfo[ i ].sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr), mesg );
 					exit(0);                /* never executed */
 				}
               	
@@ -178,7 +192,73 @@ int main(int argc, char **argv)
 	exit(0);
 }
 
-void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen)
+ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
+{
+	ssize_t			n;
+	struct iovec	iovsend[2], iovrecv[2];
+
+	if( rttinit == 0 ) 
+	{
+		rtt_init( &rttinfo );
+		rttinit = 1;
+		rtt_d_flag = 1;
+	}
+
+	sendhdr.seq++;
+	msgsend.msg_name = destaddr;
+	msgsend.msg_namelen = destlen;
+	msgsend.msg_iov = iovsend;
+	msgsend.msg_iovlen = 2;
+	iovsend[0].iov_base = &sendhdr;
+	iovsend[0].iov_len = sizeof(struct hdr);
+	iovsend[1].iov_base = outbuff;
+	iovsend[1].iov_len = outbytes;
+
+	signal(SIGALRM, sig_alrm);
+	rtt_newpack( &rttinfo );		/* initialize for this packet */
+
+sendagain:
+	sendhdr.ts = rtt_ts( &rttinfo );
+	sendmsg( fd, &msgsend, 0 );
+	alarm( rtt_start( &rttinfo ) ); 	/* calc timeout value & start timer */
+
+	if ( sigsetjmp( jmpbuf, 1 ) != 0 ) 
+	{
+		if ( rtt_timeout( &rttinfo ) < 0 ) 
+		{
+			err_msg( "dg_send_packet: no response from server, giving up" );
+			rttinit = 0;	/* reinit in case we're called again */
+			errno = ETIMEDOUT;
+			return(-1);
+		}
+		goto sendagain;
+	}
+	alarm(0);		
+
+	rtt_stop(&rttinfo, rtt_ts(&rttinfo) - recvhdr.ts);
+	return(n - sizeof(struct hdr));	/* return size of received datagram */
+}
+
+static void sig_alrm( int signo )
+{
+	siglongjmp( jmpbuf, 1 );
+}
+
+ssize_t dg_send( int fd, const void *outbuff, size_t outbytes, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
+{
+	ssize_t	n;
+	n = dg_send_packet( fd, outbuff, outbytes, inbuff, 
+						inbytes, destaddr, destlen );
+	if ( n < 0 )
+	{	
+		err_quit("dg_send_packet error");
+	}
+		
+	return( n );
+}
+
+
+void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename )
 {
 	int						n;
 	char					mesg[MAXLINE];
@@ -186,10 +266,14 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	int 					connfd;
 	struct sockaddr_in      ss;
 	char 					IPServer[20];
+	FILE 					*ifp;
+	ssize_t					bytes;
+	char					sendline[MAXLINE], recvline[MAXLINE + 1];
 
-	printf( "child server initiated...\n" );
+	printf( "Child server initiated...\n" );
+	printf( "******************* Child Server *********************\n" );
 
-	
+	printf( "Creating Datagram...\n" );
 	if( ( connfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
 	{
 		printf( "socket error\n" );
@@ -197,6 +281,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	}
 
 	/* Bind to IPServer and EPHEMERAL PORT and return EPHEMERAL PORT */
+
 	bind( connfd, (SA *) servaddr, sizeof( struct sockaddr_in ) );
 	slen = sizeof( ss );
 
@@ -235,5 +320,17 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		printf("ACK recieved..\n");
 		printf("Closing the listening socket on parent..\n");
 		close( sockfd );
-	}	
+	}
+
+	printf( "Picking data from the file..\n" );
+	ifp = fopen( filename, 	"r" );
+
+	printf("Sending file to the client..\n");	
+	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+	{
+		/* Pick the data from the file  */ 
+		bytes = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, pservaddr, servlen );
+	}
+
+
 }
