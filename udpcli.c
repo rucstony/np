@@ -308,7 +308,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	printf("Sending Acknowledgement to server using reconnected socket...\n");
 	write( sockfd, "ACK\n", strlen( "ACK\n" ) + 1 );
 
-	while( 	n = read( sockfd, recvline, MAXLINE ) > 0 )
+	while( n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL ) > 0 )
 	{
 		printf("Received datagram from server child of %d bytes..\n", n );	
 	}	
