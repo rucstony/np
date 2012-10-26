@@ -255,6 +255,7 @@ int main( int argc, char **argv )
 
 ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
 {
+	printf("Entering dg_recieve()..\n");
 	ssize_t			n;
 	struct iovec	iovrecv[2];
 
@@ -267,7 +268,10 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 	iovrecv[1].iov_base = inbuff;
 	iovrecv[1].iov_len = inbytes;
 
-	n = recvmsg(fd, &msgrecv, 0);
+	printf("Just about to recvmsg()..\n");
+	n = recvmsg( fd, &msgrecv, 0);
+	printf("We just recvmsg()'ed !..\n");
+
 	return ( n- sizeof(struct hdr) );
 }
 
