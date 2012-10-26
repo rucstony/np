@@ -297,9 +297,11 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		
 	ss.sin_port = htonl( (uint16_t) atoi( recvline ) ); //assigning server port from client.in;
 
-		printf( "PORT NUMBER USED TO RECONNECT : %d\n", pservaddr.sin_port );
+		printf( "PORT NUMBER USED TO RECONNECT : %d\n", ss.sin_port );
 	
-	if( connect( sockfd, pservaddr, servlen ) < 0 )
+	slen = sizeof( ss );
+	
+	if( connect( sockfd, &ss, slen ) < 0 )
 	{
 		printf( "Error in connecting to server..\n" );
 		exit(1);
