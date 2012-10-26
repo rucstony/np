@@ -19,6 +19,15 @@ typedef struct
 	char data[MAXLINE];
 }config;
 
+static struct msghdr	msgrecv;	/* assumed init to 0 */
+static struct hdr 
+{
+  uint32_t	seq;	/* sequence # */
+  uint32_t	ts;		/* timestamp when sent */
+}recvhdr;
+
+
+
 void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] );
 
 
@@ -244,6 +253,24 @@ int main( int argc, char **argv )
 	exit(0);
 }
 
+ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
+{
+	ssize_t			n;
+	struct iovec	iovrecv[2];
+
+	msgrecv.msg_name = NULL;
+	msgrecv.msg_namelen = 0;
+	msgrecv.msg_iov = iovrecv;
+	msgrecv.msg_iovlen = 2;
+	iovrecv[0].iov_base = &recvhdr;
+	iovrecv[0].iov_len = sizeof(struct hdr);
+	iovrecv[1].iov_base = inbuff;
+	iovrecv[1].iov_len = inbytes;
+
+	n = recvmsg(fd, &msgrecv, 0);
+	return ( n- sizeof(struct hdr) );
+}
+
 void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] )
 {
 	int 					size;
@@ -252,7 +279,6 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	socklen_t 				slen;
 	struct sockaddr_in      ss;
 	char 					IPServer[20];	
-	
 
 	if( connect( sockfd, pservaddr, servlen ) < 0 )
 	{
@@ -308,7 +334,9 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	printf("Sending Acknowledgement to server using reconnected socket...\n");
 	write( sockfd, "ACK\n", strlen( "ACK\n" ) + 1 );
 
-	while( n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL ) > 0 )
+//	n = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, pservaddr, servlen );
+
+	while( n = dg_recieve( sockfd, recvline, MAXLINE, &ss, ss ) > 0 )
 	{
 		printf("Received datagram from server child of %d bytes..\n", n );	
 	}	
