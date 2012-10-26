@@ -236,6 +236,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	
 	//sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen);
 
+	printf("THIS IS THE MESSAGE I AM SENDING TO CLIENT : %s\n", mesg );
 	
 	if( sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen) < 0 ) 
 	{
