@@ -166,7 +166,7 @@ int main(int argc, char **argv)
 				//sendto( sockinfo[ i ].sockfd, mesg, sizeof( mesg ), 0, (SA *) &cliaddr, len);
 				if ( ( pid = fork() ) == 0 ) 
 				{             /* child */
-					mydg_echo( sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr) );
+					mydg_echo( sockinfo[ i ].sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr) );
 					exit(0);                /* never executed */
 				}
               	
@@ -218,26 +218,12 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		exit(1);
 	}	
 
-	if( getpeername( connfd, (SA *)&ss, &slen ) < 0 )
-	{
-		printf( "peername error\n" );
-		exit(1);
-	}
-
-	inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE );
-
-	printf( "******************* SERVER INFO *********************\n" );
-        printf( "IPClient: %s\n",IPServer);
-        printf( "Client PORT: %d\n", ss.sin_port );
-        	
-
-
 	sprintf( mesg, "%d\n", ss.sin_port );
 	
 	//sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen);
 
 	printf("THIS IS THE MESSAGE I AM SENDING TO CLIENT : %s\n", mesg );
-	
+
 	if( sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen) < 0 ) 
 	{
 		printf("ERROR IN SENDTO : %d ",errno);
