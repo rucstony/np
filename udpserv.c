@@ -335,12 +335,13 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	ifp = fopen( filename, 	"r" );
 
 	printf("Sending file to the client..\n");	
-	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
-	{
+//	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+//	{
+		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
 		printf("Calling dg_send() with picked up data..\n");
 		bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
-	}
+//	}
 
 
 }
