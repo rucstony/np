@@ -200,6 +200,8 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 	ssize_t			n;
 	struct iovec	iovsend[2], iovrecv[2];
 
+	printf("Entered the dg_send_packet() routine..\n");	
+
 	if( rttinit == 0 ) 
 	{
 		rtt_init( &rttinfo );
@@ -222,7 +224,10 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 
 sendagain:
 	sendhdr.ts = rtt_ts( &rttinfo );
+
+	printf("Calling sendmsg() function now..\n");	
 	sendmsg( fd, &msgsend, 0 );
+
 	alarm( rtt_start( &rttinfo ) ); 	/* calc timeout value & start timer */
 
 	if ( sigsetjmp( jmpbuf, 1 ) != 0 ) 
