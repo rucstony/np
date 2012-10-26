@@ -237,8 +237,10 @@ int main( int argc, char **argv )
 
 	servaddr.sin_port = htonl(12345); //assigning server port from client.in;
 	inet_pton( AF_INET, IPServer, &servaddr.sin_addr );
+
 	printf(" calling dg_cli\n");	
-    	dg_cli1( stdin, sockfd1, (SA *)&servaddr, sizeof( servaddr ), configdata );
+   	dg_cli1( stdin, sockfd1, (SA *)&servaddr, sizeof( servaddr ), configdata );
+
 	exit(0);
 }
 
@@ -287,9 +289,23 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		/*
 		n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL );
 		*/
+		
 		recvline[ n ] = 0;
 		fputs( recvline, stdout );
-		printf( "received : %s \n", recvline );
+		printf( "Ephemeral Port Number Of Server Child : %s \n", recvline );
+		
+		pservaddr.sin_port = htonl( (uint16_t) atoi( recvline ) ); //assigning server port from client.in;
+
+		printf( "PORT NUMBER USED TO RECONNECT : %d\n", pservaddr.sin_port );
+	
+	if( connect( sockfd, pservaddr, servlen ) < 0 )
+	{
+		printf( "Error in connecting to server..\n" );
+		exit(1);
+	}	
 	//}
 }
+
+
+
 

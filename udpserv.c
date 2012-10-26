@@ -34,7 +34,6 @@ int main(int argc, char **argv)
 	FILE 				*ifp;
 
 	ifp = fopen( "server.in", mode );
-
 	if ( ifp == NULL ) 
 	{
 		fprintf( stderr, "Can't open input file server.in!\n" );
@@ -51,6 +50,7 @@ int main(int argc, char **argv)
     	{	
         	configdata[countline].data[s-1] = '\0';          /* truncate the string */
         }	
+
 		dataline[n] = 0;
 		countline++;	
 	}	
@@ -132,41 +132,43 @@ int main(int argc, char **argv)
 			else
 				err_sys("select error");
 		}
-		printf("Entered into the select\n");
+
 		for( i = 0; i<sockcount; i++ )
 		{
 			if( FD_ISSET( sockinfo[ i ].sockfd, &rset ) )
 			{
-				// Logic to add a connection from 
-				printf("Entered into the FD_ISSET\n");
-
 				len = sizeof( cliaddr );
 				n = recvfrom( sockinfo[ i ].sockfd, mesg, MAXLINE, 0, (SA *) &cliaddr, &len );
+		
 				printf("Recieved message from client : %s\n", mesg );
 				inet_ntop( AF_INET, &cliaddr.sin_addr, mesg, MAXLINE );
 				printf("Client address : %s\n",mesg );
+		
+				/* Returns which interface onto which the client has connected. */ 
+				if( getsockname( sockinfo[ i ].sockfd, (SA *)&ss, &slen ) < 0 )
+				{
+					printf( "sockname error\n" );
+					exit(1);
+				}      
+				
+				printf("Connection recieved on :\n ");	
+				printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
+				printf( "SERVER PORT: %d\n", ss.sin_port );
+				printf( "sockfd----- %d\n", sockinfo[ i ].sockfd );
+		
+				/* Filling up the child server address structure. */
 				childservaddr.sin_family = AF_INET;
-       			        childservaddr.sin_port = htonl( 0 );
-                		inet_pton( AF_INET, IPServer, &childservaddr.sin_addr );
+       			childservaddr.sin_port = htonl( 0 );
+				inet_pton( AF_INET, IPServer, &childservaddr.sin_addr );
 				slen = sizeof( ss );
-
-       			         if( getsockname( sockinfo[ i ].sockfd, (SA *)&ss, &slen ) < 0 )
-                		{
-                        		printf( "sockname error\n" );
-                        		exit(1);
-                		}      
-				printf(" connect ion recinved on :\n ");	
-                		printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
-               			printf( "SERVER PORT: %d\n", ss.sin_port );
 				inet_pton( AF_INET, IPServer, &childservaddr.sin_addr );	
-
-                		printf( "sockfd----- %d\n", sockinfo[ i ].sockfd );
 	
-				sendto( sockinfo[ i ].sockfd, mesg, sizeof(mesg), 0, (SA *) &cliaddr, len);
-		               	if ( (pid = fork()) == 0) {             /* child */
-                	                   mydg_echo(sockfd,(SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr));
-                                exit(0);                /* never executed */
-                                }
+				//sendto( sockinfo[ i ].sockfd, mesg, sizeof( mesg ), 0, (SA *) &cliaddr, len);
+				if ( ( pid = fork() ) == 0 ) 
+				{             /* child */
+					mydg_echo( sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr) );
+					exit(0);                /* never executed */
+				}
               	
 			}	
 		}
@@ -178,39 +180,47 @@ int main(int argc, char **argv)
 /* end udpserv3 */
 
 /* include mydg_echo */
-void
-mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen)
+void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen)
 {
-	int			n;
-	char		mesg[MAXLINE];
-	socklen_t	len,slen;
-	printf("child server initiated...\n");
-	int connfd;
-        struct sockaddr_in      ss;
-        char                                    IPServer[20];
+	int						n;
+	char					mesg[MAXLINE];
+	socklen_t				len, slen;
+	int 					connfd;
+	struct sockaddr_in      ss;
+	char 					IPServer[20];
+
+	printf( "child server initiated...\n" );
 
 	
 	if( ( connfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
-                {
-                        printf( "socket error\n" );
-                        exit(1);
-                }       //setsockopt( connfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
+	{
+		printf( "socket error\n" );
+		exit(1);
+	}
 
+	/* Bind to IPServer and EPHEMERAL PORT and return EPHEMERAL PORT */
+	bind( connfd, (SA *) servaddr, sizeof( struct sockaddr_in ) );
+	slen = sizeof( ss );
 
+	if( getsockname( connfd, (SA *)&ss, &slen ) < 0 )
+	{
+		printf( "sockname error\n" );
+		exit(1);
+	}      
 
-                bind( connfd, (SA *) servaddr, sizeof( struct sockaddr_in ) );
+	printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
+	printf( "SERVER PORT: %d\n", ss.sin_port );
 
-                slen = sizeof( ss );
+	/* Connect to IPClient */
+	if( connect( connfd, cliaddr, clilen ) < 0 )
+	{
+		printf( "Error in connecting to server..\n" );
+		exit(1);
+	}	
 
-                if( getsockname( connfd, (SA *)&ss, &slen ) < 0 )
-                {
-                        printf( "sockname error\n" );
-                        exit(1);
-                }      
-
-                printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
-                printf( "SERVER PORT: %d\n", ss.sin_port );
-
+	sprintf( mesg, "%d\n", ss.sin_port );
+	sendto( sockfd, mesg, sizeof( mesg ), 0, (SA *) &cliaddr, len);
+	
 
 	/*	for ( ; ; ) 
 	{
@@ -222,5 +232,6 @@ mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t 
 		sendto( sockfd, mesg, n, 0, pcliaddr, len );
 		printf( "Sending...\n" );
 	}
-*/}
+*/
+}
 /* end mydg_echo */
