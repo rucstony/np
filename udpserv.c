@@ -25,7 +25,8 @@ typedef struct
 }socket_info;
 
 //typedef struct socket_info socket_info;
-void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen);
+void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename );
+
 typedef struct 
 {
 	char data[MAXLINE];
@@ -192,6 +193,8 @@ int main(int argc, char **argv)
 	exit(0);
 }
 
+/***************************************************************************************************************************/
+
 ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
 {
 	ssize_t			n;
@@ -256,7 +259,6 @@ ssize_t dg_send( int fd, const void *outbuff, size_t outbytes, void *inbuff, siz
 		
 	return( n );
 }
-
 
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename )
 {
@@ -329,7 +331,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
 	{
 		/* Pick the data from the file  */ 
-		bytes = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, pservaddr, servlen );
+		bytes = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
 	}
 
 
