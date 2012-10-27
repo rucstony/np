@@ -312,6 +312,7 @@ void update_ack()
 		
 		if( rwnd[ global_ack_number%max_window_size ].msg_iov != NULL )
 		{
+			printf("Incrementing global_ack_number from %d\n", global_ack_number ); 
 			global_ack_number++;
 		}
 		else
