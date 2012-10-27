@@ -25,7 +25,9 @@ typedef struct
 static struct msghdr	msgrecv;	/* assumed init to 0 */
 
 int 		  		  ack_number = 0;
+
 static struct msghdr  *rwnd; 
+
 int 				  max_window_size;
 
 
@@ -301,13 +303,14 @@ void update_ack()
 {
 	while(1)
 	{
-		if( rwnd == 0 )
+		
+		if( rwnd[ ack_number ].msg_iov != NULL )
 		{
-			break;
+			ack_number++;
 		}
 		else
 		{
-			ack_number++;
+			break;
 		}	
 	}
 	printf("Current global Acknowledgement Number is %d..\n", ack_number );
