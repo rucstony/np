@@ -298,8 +298,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%max_window_size );
 	occupied = (recvhdr.seq)%max_window_size;
 
-	printf("We just recvmsg()'ed !.. %s\n", inbuff );
-	printf(" %s\n", inbuff );
+//	printf("We just recvmsg()'ed !.. %s\n", inbuff );
+//	printf(" %s\n", inbuff );
 
 	return (1);
 //	return ( n- sizeof(struct hdr) );
@@ -422,7 +422,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
-		printf("%s\n", recvline );
+	//	printf("%s\n", recvline );
 		printf( "Received datagram from server child of %d bytes..\n", n );	
 		
 		/* After this send ACK */
