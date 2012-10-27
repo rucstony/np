@@ -235,6 +235,7 @@ sendagain:
 
 	printf( "Calling sendmsg() function now..\n" );	
 	sendmsg( fd, &msgsend, 0 );
+	printf( "Completed sending packet..\n" );	
 
 	alarm( rtt_start( &rttinfo ) ); 	/* calc timeout value & start timer */
 
