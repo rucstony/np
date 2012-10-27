@@ -315,7 +315,7 @@ void update_ack()
 }
 
 
-ssize_t dg_send_ack( int fd , int acknowledgement )
+ssize_t dg_send_ack( int fd )
 {
 	ssize_t			n;
 	struct iovec	iovrecv[2];
