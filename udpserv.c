@@ -217,7 +217,7 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
 	sendhdr.seq++;
 	msgsend.msg_name = NULL;
-	msgsend.msg_namelen = 0;
+	msgsend.msg_namelen = NULL;
 	msgsend.msg_iov = iovsend;
 	msgsend.msg_iovlen = 2;
 	iovsend[0].iov_base = &sendhdr;
