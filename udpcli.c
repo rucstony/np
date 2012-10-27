@@ -290,7 +290,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 
 
 	printf("Just about to recvmsg()..\n");
-	n = recvmsg( fd, &msgrecv, 0);
+	n = Recvmsg( fd, &msgrecv, 0);
 	printf("We just recvmsg()'ed !..\n");
 
 
