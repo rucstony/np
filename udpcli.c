@@ -301,13 +301,13 @@ void update_ack()
 {
 	while(1)
 	{
-		if( rwnd[ ack_number ] != NULL )
+		if( rwnd[ ack_number ] == NULL )
 		{
-			ack_number++;
+			break;
 		}
 		else
 		{
-			break;
+			ack_number++;
 		}	
 	}
 	printf("Current global Acknowledgement Number is %d..\n", ack_number );
