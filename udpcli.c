@@ -301,7 +301,7 @@ void update_ack()
 {
 	while(1)
 	{
-		if( rwnd[ ack_number ] == 0 )
+		if( rwnd == 0 )
 		{
 			break;
 		}
