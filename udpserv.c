@@ -1,7 +1,7 @@
 #include        "unpifiplus.h"
 #include		"unprtt.h"
 #include		<setjmp.h>
-#include 	<sys/socket.h>
+#include 		<sys/socket.h>
 
 static struct rtt_info   rttinfo;
 static int				 rttinit = 0;
@@ -26,9 +26,8 @@ typedef struct
 }socket_info;
 
 static struct msghdr  *swnd; 
-int send_window_size;
+int 				  max_window_size;
 
-//typedef struct socket_info socket_info;
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename );
 
 typedef struct 
@@ -76,8 +75,8 @@ int main(int argc, char **argv)
 	fclose( ifp );
 
 	printf("Creating the send window array dynamically for input window size..\n");
-	send_window_size = (int) atoi( configdata[1].data );
-	swnd = (struct msghdr *) malloc( send_window_size*sizeof( struct msghdr ) );
+	max_window_size = (int) atoi( configdata[1].data );
+	swnd = (struct msghdr *) malloc( max_window_size*sizeof( struct msghdr ) );
 
 	for ( ifihead = ifi = get_ifi_info_plus( AF_INET, 1 );
 		  ifi != NULL;
@@ -200,7 +199,7 @@ int main(int argc, char **argv)
 
 /***************************************************************************************************************************/
 
-ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
+int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_number )
 {
 	ssize_t			n;
 	struct iovec	iovsend[2], iovrecv[2];
@@ -216,7 +215,9 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 
 	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
-	sendhdr.seq++;
+	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
+	
+	sendhdr.seq = sequence_number;
 	msgsend.msg_name = NULL;
 	msgsend.msg_namelen = NULL;
 	msgsend.msg_iov = iovsend;
@@ -226,8 +227,8 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
 
-	printf( "Adding the packet to the send buffer..\n" );
-	swnd[ (sendhdr.seq)%send_window_size ] = msgsend;
+	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%max_window_size );
+	swnd[ (sendhdr.seq)%max_window_size ] = msgsend;
 
 	signal(SIGALRM, sig_alrm);
 	rtt_newpack( &rttinfo );		/* initialize for this packet */
@@ -262,7 +263,7 @@ sendagain:
 	alarm(0);		
 
 	rtt_stop( &rttinfo, rtt_ts(&rttinfo) - recvhdr.ts );
-	return(1);	/* return size of received datagram */
+	return( (sendhdr.seq)%max_window_size );	/* return size of received datagram */
 }
 
 static void sig_alrm( int signo )
@@ -270,13 +271,12 @@ static void sig_alrm( int signo )
 	siglongjmp( jmpbuf, 1 );
 }
 
-ssize_t dg_send( int fd, const void *outbuff, size_t outbytes, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
+int dg_send( int fd, const void *outbuff, size_t outbytes, int sequence_number )
 {
-	ssize_t	n;
+	int	n;
 
 	printf( "Calling dg_send_packet() routine..\n" );
-	n = dg_send_packet( fd, outbuff, outbytes, inbuff, 
-						inbytes, destaddr, destlen );
+	n = dg_send_packet( fd, outbuff, outbytes, sequence_number );
 	if ( n < 0 )
 	{	
 		err_quit("dg_send_packet error");
@@ -285,6 +285,13 @@ ssize_t dg_send( int fd, const void *outbuff, size_t outbytes, void *inbuff, siz
 	return( n );
 }
 
+/* Recieves the ack's that are sent after the buffer is full... */
+int dg_recieve_ack( int fd )
+{
+	printf("Recieving the ACK's...\n");
+	return 0;
+}
+		
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename )
 {
 	int						n;
@@ -366,13 +373,23 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	printf( "Picking data from the file..\n" );
 	ifp = fopen( filename, 	"r" );
 
+	int buffer_position, sequence_number = 0;
+
 	printf("Sending file to the client..\n");	
 	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
 	{
 //		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
 //		printf("Calling dg_send() with picked up data : %s \n", sendline );
-		bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
+		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
+		
+		if( buffer_position == max_window_size - 1  )
+		{
+			/* Go to recieve the ACK's */
+			dg_recieve_ack( connfd );
+
+		}	
+		sequence_number++;
 	}
 
 

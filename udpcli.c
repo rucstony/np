@@ -1,11 +1,11 @@
 #include	"unpifiplus.h"
 #include	<string.h>
 #include 	<arpa/inet.h>
-#include		"unprtt.h"
-#include		<setjmp.h>
+#include	"unprtt.h"
+#include	<setjmp.h>
 #include 	<sys/socket.h>
 
-#undef MAXLINE
+#undef  MAXLINE
 #define MAXLINE 65507
 typedef char* string; 
 
@@ -23,10 +23,19 @@ typedef struct
 }config;
 
 static struct msghdr	msgrecv;	/* assumed init to 0 */
+
+int 		  		  ack_number = 0;
+static struct msghdr  *rwnd; 
+int 				  max_window_size;
+
+
 static struct hdr 
 {
+
   uint32_t	seq;	/* sequence # */
   uint32_t	ts;		/* timestamp when sent */
+  uint32_t	ack_no;	/* sequence # */  		
+
 }recvhdr;
 
 
@@ -88,6 +97,11 @@ int main( int argc, char **argv )
 		*/
 	}	
 	fclose( ifp );
+	
+	printf("Creating the recieve window array dynamically for input window size..\n");
+	max_window_size = (int) atoi( configdata[3].data );
+	rwnd = (struct msghdr *) malloc( max_window_size*sizeof( struct msghdr ) );
+
 	sprintf( IPServer, "%s", configdata[0].data );
 	
 	printf("*************************************************************\n");
@@ -128,11 +142,6 @@ int main( int argc, char **argv )
         sockcount++;
 	}
 	printf("*************************************************************\n");
-
-	/*
-	if(strcmp(IPServer,"127.0.0.1\n")==0)	
-	strcpy(IPServer,"127.0.0.1\n");
-	*/
 
 	for ( x = 0; sockinfo[x].sockfd!=NULL; x++ )
 	{
@@ -203,7 +212,7 @@ int main( int argc, char **argv )
 			/* Assign any arbitrary IP address to the client. */
 			strcpy( IPClient, inet_ntop( AF_INET, &default_ip, network2, MAXLINE ) );
 			printf("STATUS : NOT LOCAL\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
-			socketIndex=0;	
+			socketIndex = 0;	
 		}	
 	}
 
@@ -222,13 +231,14 @@ int main( int argc, char **argv )
 	cliaddr.sin_port = 0;
 	inet_pton( AF_INET, IPClient, &cliaddr.sin_addr );
 
-	bind( sockfd1, (SA *)&cliaddr, sizeof( cliaddr ) ); //causes kernal to bind an ephemeral port to the socket 
+	bind( sockfd1, (SA *)&cliaddr, sizeof( cliaddr ) );
 	printf( "bound....%d\n", sockfd1 );	
 
 	printf( "IPClient123: %s\n", inet_ntop( AF_INET, &(cliaddr.sin_addr), IPClient, MAXLINE ) );
 	
 	slen = sizeof( ss );
-	//to obtain IPClient and assigned ephemeral port number	
+
+	/* To obtain IPClient and assigned ephemeral port number */	
 	if( getsockname( sockfd1, (SA *)&ss, &slen ) < 0 )
 	{
 		printf( "sockname error\n" );
@@ -242,7 +252,6 @@ int main( int argc, char **argv )
 	printf( "socket descriptor : %d\n", sockfd1 );
 	
 
-	//setting server struct
  	bzero( &servaddr, sizeof( servaddr ) );
 	servaddr.sin_family = AF_INET;
 //	servaddr.sin_port = htonl(configdata[1].data); //assigning server port from client.in;
@@ -256,28 +265,11 @@ int main( int argc, char **argv )
 	exit(0);
 }
 
-ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, socklen_t destlen )
+ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 {
-	printf("Entering dg_recieve()..\n");
 	ssize_t			n;
 	struct iovec	iovrecv[2];
 	char 			IPClient[20];
-	struct sockaddr_in 	ss1;
-	socklen_t		slen1;
-
-	slen1 = sizeof( ss1 ); 
-
-	if( getpeername( fd, (SA *)&ss1, &slen1 ) < 0 )
-	{
-		printf( "peername error\n" );
-		exit(1);
-	}
-
-	inet_ntop( AF_INET, &(ss1.sin_addr), IPClient, MAXLINE );
-
-	printf( "******************* recvmsg() *********************\n" );
- 	printf( "recvmsg(): Destination Address :  %s\n",IPClient );
-	printf( "recvmsg(): Destination Port : %d\n", ss1.sin_port );
 
 	memset(&msgrecv, '\0', sizeof(msgrecv)); 
 	
@@ -290,19 +282,70 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 	iovrecv[1].iov_base = inbuff;
 	iovrecv[1].iov_len = inbytes;
 
-
-	printf("Just about to recvmsg()..\n");
-
 	if( n = recvmsg( fd, &msgrecv, 0) < 0 ) 
 	{
 		printf("Error in RecvMsg!!\n");
 	}	
+
+	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
+	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
 
 	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 	printf(" %s\n", inbuff );
 
 //	return (n);
 	return ( n- sizeof(struct hdr) );
+}
+
+void update_ack()
+{
+	while(1)
+	{
+		if( rwnd[ ack_number ] != NULL )
+		{
+			ack_number++;
+		}
+		else
+		{
+			break;
+		}	
+	}
+	printf("Current global Acknowledgement Number is %d..\n", ack_number );
+	return;
+}
+
+
+ssize_t dg_send_ack( int fd , int acknowledgement )
+{
+	ssize_t			n;
+	struct iovec	iovrecv[2];
+	char 			IPClient[20];
+
+	memset( &msgrecv, '\0', sizeof( msgrecv ) ); 
+	memset( &recvhdr, '\0', sizeof( recvhdr ) ); 
+	
+	update_ack();
+
+	recvhdr.ack_no = ack_number;
+	msgrecv.msg_name = NULL;
+	msgrecv.msg_namelen = 0;
+	msgrecv.msg_iov = iovrecv;
+	msgrecv.msg_iovlen = 1;
+	iovrecv[0].iov_base = &recvhdr;
+	iovrecv[0].iov_len = sizeof( struct hdr );
+//	iovrecv[1].iov_base = inbuff;
+//	iovrecv[1].iov_len = inbytes;
+
+	if( n = sendmsg( fd, &msgrecv, 0) < 0 ) 
+	{
+		printf("Error in SendMsg!!\n");
+	}	
+
+//	printf("We just recvmsg()'ed !.. %s\n", inbuff );
+//	printf(" %s\n", inbuff );
+
+//	return (n);
+	return ( n );
 }
 
 void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] )
@@ -331,22 +374,13 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE );
 
 	printf( "******************* SERVER INFO *********************\n" );
-        printf( "IPServer: %s\n",IPServer);
-        printf( "SERVER PORT: %d\n", ss.sin_port );
+	printf( "IPServer: %s\n",IPServer);
+    printf( "SERVER PORT: %d\n", ss.sin_port );
         	
 	size = 70000;
 	
 	setsockopt( sockfd, SOL_SOCKET, SO_SNDBUF, &size, sizeof( size ) );
 	setsockopt( sockfd, SOL_SOCKET, SO_RCVBUF, &size, sizeof( size ) );
-	
-	//while ( fgets( sendline, MAXLINE, fp ) != NULL )
-	//{
-		/*
-		sendto( sockfd, sendline, MAXLINE, 0, pservaddr, servlen );
-		*/
-		/*
-		n = recvfrom( sockfd, recvline, MAXLINE, 0, NULL, NULL );
-		*/
 	
 	write( sockfd, configdata[2].data, strlen( configdata[2].data ) + 1 );
 	n = read( sockfd, recvline, MAXLINE );
@@ -354,8 +388,9 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	recvline[ n ] = 0;
 	fputs( recvline, stdout );
 	printf( "Ephemeral Port Number Of Server Child : %s \n", recvline );
-		
-	ss.sin_port = htonl( (uint16_t) atoi( recvline ) ); //assigning server port from client.in;
+	
+	/* Assigning server port from client.in */
+	ss.sin_port = htonl( (uint16_t) atoi( recvline ) ); 
 
 	printf( "Reconnecting on server child port number %d...\n", ss.sin_port );
 	slen = sizeof( ss );
@@ -365,21 +400,20 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		exit(1);
 	}	
 
-	printf("Sending Acknowledgement to server using reconnected socket...\n");
+	printf( "Sending Acknowledgement to server using reconnected socket...\n" );
 	write( sockfd, "ACK\n", strlen( "ACK\n" ) + 1 );
 
-//	n = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, pservaddr, servlen );
-
-//	while( n = recv( sockfd, recvline, MAXLINE, 0 ) > 0 )
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
 
-	while( n = dg_recieve( sockfd, recvline, MAXLINE, &ss, slen ) > 0 )
+	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
 		printf("%s\n", recvline );
-		printf("Received datagram from server child of %d bytes..\n", n );	
+		printf( "Received datagram from server child of %d bytes..\n", n );	
+		
+		/* After this send ACK */
+		dg_send_ack( sockfd );
 	}	
-	//}
 }
 
 
