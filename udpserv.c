@@ -318,6 +318,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		exit(1);
 	}	
 
+	slen1 = sizeof( ss1 ); 
+
 	if( getpeername( connfd, (SA *)&ss1, &slen1 ) < 0 )
 	{
 		printf( "peername error\n" );
@@ -332,7 +334,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 
 	sprintf( mesg, "%d\n", ss.sin_port );
-	printf("THIS IS THE MESSAGE I AM SENDING TO CLIENT : %s\n", mesg );
+	printf("Sending the Ephemeral port number to client : %s..\n", mesg );
 
 	if( sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen) < 0 ) 
 	{
