@@ -238,7 +238,7 @@ sendagain:
 	int n1 = Sendmsg( fd, &msgsend, 0 );
 	if( n1 > 0 )
 	{	
-		printf( "Completed sending packet..\n" );	
+		printf( "Completed sending packet.. with %d bytes...\n", n1 );	
 	}
 	else
 	{
