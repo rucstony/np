@@ -24,6 +24,9 @@ typedef struct
 
 }socket_info;
 
+static struct msghdr  *swnd; 
+int send_window_size;
+
 //typedef struct socket_info socket_info;
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename );
 
@@ -69,10 +72,11 @@ int main(int argc, char **argv)
 		dataline[n] = 0;
 		countline++;	
 	}	
-	
-	printf( "read %d lines\n", countline );
-
 	fclose( ifp );
+
+	printf("Creating the send window array dynamically for input window size..\n");
+	send_window_size = (int) atoi( configdata[1].data );
+	swnd = (struct msghdr *) malloc( send_window_size*sizeof( struct msghdr ) );
 
 	for ( ifihead = ifi = get_ifi_info_plus( AF_INET, 1 );
 		  ifi != NULL;
@@ -200,7 +204,7 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 	ssize_t			n;
 	struct iovec	iovsend[2], iovrecv[2];
 
-	printf("Entered the dg_send_packet() routine..\n");	
+	printf( "Entered the dg_send_packet() routine..\n" );	
 
 	if( rttinit == 0 ) 
 	{
@@ -209,6 +213,7 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 		rtt_d_flag = 1;
 	}
 
+	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
 	sendhdr.seq++;
 	msgsend.msg_name = destaddr;
 	msgsend.msg_namelen = destlen;
@@ -219,13 +224,16 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
 
+	printf( "Adding the packet to the send buffer..\n" );
+	swnd[ (sendhdr.seq)%send_window_size ] = msgsend;
+
 	signal(SIGALRM, sig_alrm);
 	rtt_newpack( &rttinfo );		/* initialize for this packet */
 
 sendagain:
 	sendhdr.ts = rtt_ts( &rttinfo );
 
-	printf("Calling sendmsg() function now..\n");	
+	printf( "Calling sendmsg() function now..\n" );	
 	sendmsg( fd, &msgsend, 0 );
 
 	alarm( rtt_start( &rttinfo ) ); 	/* calc timeout value & start timer */
@@ -243,7 +251,7 @@ sendagain:
 	}
 	alarm(0);		
 
-	rtt_stop(&rttinfo, rtt_ts(&rttinfo) - recvhdr.ts);
+	rtt_stop( &rttinfo, rtt_ts(&rttinfo) - recvhdr.ts );
 	return(1);	/* return size of received datagram */
 }
 
@@ -256,7 +264,7 @@ ssize_t dg_send( int fd, const void *outbuff, size_t outbytes, void *inbuff, siz
 {
 	ssize_t	n;
 
-	printf("Calling dg_send_packet() routine..\n");
+	printf( "Calling dg_send_packet() routine..\n" );
 	n = dg_send_packet( fd, outbuff, outbytes, inbuff, 
 						inbytes, destaddr, destlen );
 	if ( n < 0 )
