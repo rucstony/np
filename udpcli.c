@@ -299,7 +299,9 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 	}	
 
 	printf("We just recvmsg()'ed !.. %s\n", inbuff );
+	printf(" %s\n", inbuff );
 
+//	return (n);
 	return ( n- sizeof(struct hdr) );
 }
 

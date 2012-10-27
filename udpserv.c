@@ -215,6 +215,7 @@ ssize_t dg_send_packet( int fd, const void *outbuff, size_t outbytes, void *inbu
 	}
 
 	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
+	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	sendhdr.seq++;
 	msgsend.msg_name = NULL;
 	msgsend.msg_namelen = NULL;
@@ -366,23 +367,13 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	ifp = fopen( filename, 	"r" );
 
 	printf("Sending file to the client..\n");	
-//	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
-//	{
-		fgets( sendline, MAXLINE, ifp );
+	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+	{
+//		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
-		strcpy( sendline, "this is a test string\n");
-		printf("Calling dg_send() with picked up data : %s \n", sendline );
-
-//	struct sockaddr_in test = malloc( sizeof( struct ) )
-//	*cliaddr;
-		
-//	printf("dg_send(): Destination Address : %s\n", inet_ntop( AF_INET, &(cliaddr->sin_addr), IPClient, MAXLINE ));
-//	printf( "dg_send(): Destination Port: %d\n", &(cliaddr->sin_port) );
-
-	//	send( connfd, sendline, strlen( sendline ), 0 );
-
+//		printf("Calling dg_send() with picked up data : %s \n", sendline );
 		bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
-//	}
+	}
 
 
 }
