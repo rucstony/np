@@ -105,7 +105,10 @@ int main( int argc, char **argv )
 	
 	printf("Creating the recieve window array dynamically for input window size..\n");
 	max_window_size = (int) atoi( configdata[3].data );
+
 	rwnd = (struct msghdr *) malloc( max_window_size*sizeof( struct msghdr ) );
+	memset( rwnd, '\0', max_window_size*sizeof( struct msghdr ) ); 
+
 
 	sprintf( IPServer, "%s", configdata[0].data );
 	
