@@ -301,7 +301,7 @@ void update_ack()
 {
 	while(1)
 	{
-		if( rwnd[ ack_number ] == NULL )
+		if( rwnd[ ack_number ] == (struct msghdr)NULL )
 		{
 			break;
 		}
