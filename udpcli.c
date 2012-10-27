@@ -258,6 +258,9 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 	printf("Entering dg_recieve()..\n");
 	ssize_t			n;
 	struct iovec	iovrecv[2];
+	char 			IPClient[20];
+	struct sockaddr_in 	ss1;
+	socklen_t		slen1;
 
 	msgrecv.msg_name = destaddr;
 	msgrecv.msg_namelen = destlen;
@@ -268,9 +271,24 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 	iovrecv[1].iov_base = inbuff;
 	iovrecv[1].iov_len = inbytes;
 
+	slen1 = sizeof( ss1 ); 
+
+	if( getpeername( fd, (SA *)&ss1, &slen1 ) < 0 )
+	{
+		printf( "peername error\n" );
+		exit(1);
+	}
+
+	inet_ntop( AF_INET, &(ss1.sin_addr), IPClient, MAXLINE );
+
+	printf( "******************* recvmsg() *********************\n" );
+ 	printf( "recvmsg(): Destination Address :  %s\n",IPClient );
+	printf( "recvmsg(): Destination Port : %d\n", ss1.sin_port );
+
 	printf("Just about to recvmsg()..\n");
 	n = recvmsg( fd, &msgrecv, 0);
 	printf("We just recvmsg()'ed !..\n");
+
 
 	return ( n- sizeof(struct hdr) );
 }
@@ -343,7 +361,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 //	while( n = recv( sockfd, recvline, MAXLINE, 0 ) > 0 )
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
-	
+
 	while( n = dg_recieve( sockfd, recvline, MAXLINE, &ss, slen ) > 0 )
 	{
 		printf("%s\n", recvline );
