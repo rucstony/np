@@ -388,7 +388,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			/* Go to recieve the ACK's */
 			printf("Trying to recieve ACK's..\n");
 			dg_recieve_ack( connfd );
-
 		}	
 		sequence_number++;
 	}

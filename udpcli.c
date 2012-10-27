@@ -24,9 +24,12 @@ typedef struct
 
 static struct msghdr	msgrecv;	/* assumed init to 0 */
 
-int 		  		  ack_number = 0;
+int 		  		  global_ack_number = 0;
 
 static struct msghdr  *rwnd; 
+int 				  rwnd_start;
+int 				  rwnd_end;
+int 				  occupied = -1;
 
 int 				  max_window_size;
 
@@ -292,6 +295,9 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
 	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
 
+	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%max_window_size );
+	occupied = (recvhdr.seq)%max_window_size;
+
 	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 	printf(" %s\n", inbuff );
 
@@ -304,16 +310,17 @@ void update_ack()
 	while(1)
 	{
 		
-		if( rwnd[ ack_number ].msg_iov != NULL )
+		if( rwnd[ global_ack_number%max_window_size ].msg_iov != NULL )
 		{
-			ack_number++;
+			global_ack_number++;
 		}
 		else
 		{
 			break;
 		}	
 	}
-	printf("Current global Acknowledgement Number is %d..\n", ack_number );
+	printf("Current global Acknowledgement Number is %d..\n", global_ack_number );
+
 	return;
 }
 
@@ -329,7 +336,7 @@ ssize_t dg_send_ack( int fd )
 	
 	update_ack();
 
-	recvhdr.ack_no = ack_number;
+	recvhdr.ack_no = global_ack_number;
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
 	msgrecv.msg_iov = iovrecv;
@@ -360,6 +367,10 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	struct sockaddr_in      ss;
 	char 					IPServer[20];	
 
+	printf("Initializing the recieve window start and end..\n");
+	rwnd_start = 0 ; 
+	rwnd_end   = max_window_size - 1 ;
+	
 	if( connect( sockfd, pservaddr, servlen ) < 0 )
 	{
 		printf( "Error in connecting to server..\n" );
@@ -417,10 +428,16 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		/* After this send ACK */
 		printf("Attempting to send an ACK..\n");
 		dg_send_ack( sockfd );
+
+		printf("Updating the start of the recieve window..\n");
+		rwnd_start = global_ack_number%max_window_size - 1 ;
+
+		printf("*****************************************\n");
+		printf( "rwnd_start : %d\n", rwnd_start );
+		printf( "rwnd_end : %d\n", rwnd_end );
+		printf( "occupied : %d\n", occupied );
+		printf("*****************************************\n");
+		
 		printf("Returning to recvmsg()..\n");
-	}	
+		}	
 }
-
-
-
-
