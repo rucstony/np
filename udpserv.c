@@ -235,7 +235,8 @@ sendagain:
 	sendhdr.ts = rtt_ts( &rttinfo );
 
 	printf( "Calling sendmsg() function now..\n" );	
-	int n1 = Sendmsg( fd, &msgsend, 0 );
+	int n1;
+	n1 = sendmsg( fd, &msgsend, 0 );
 	if( n1 > 0 )
 	{	
 		printf( "Completed sending packet.. with %d bytes...\n", n1 );	
