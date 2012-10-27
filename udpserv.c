@@ -349,10 +349,11 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		/* Pick the data from the file  */ 
 		printf("Calling dg_send() with picked up data..\n");
 
-	struct sockaddr_in test = *cliaddr;
+//	struct sockaddr_in test = malloc( sizeof( struct ) )
+//	*cliaddr;
 		
-	printf("dg_send(): Destination Address : %s\n", inet_ntop( AF_INET, &(test.sin_addr), IPClient, MAXLINE ));
-	printf( "dg_send(): Destination Port: %d\n", &(test.sin_port) );
+	printf("dg_send(): Destination Address : %s\n", inet_ntop( AF_INET, &(cliaddr->sin_addr), IPClient, MAXLINE ));
+	printf( "dg_send(): Destination Port: %d\n", &(cliaddr->sin_port) );
 
 	//	send( connfd, sendline, strlen( sendline ), 0 );
 
