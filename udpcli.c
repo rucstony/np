@@ -259,8 +259,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 	ssize_t			n;
 	struct iovec	iovrecv[2];
 
-	msgrecv.msg_name = NULL;
-	msgrecv.msg_namelen = 0;
+	msgrecv.msg_name = destaddr;
+	msgrecv.msg_namelen = destlen;
 	msgrecv.msg_iov = iovrecv;
 	msgrecv.msg_iovlen = 2;
 	iovrecv[0].iov_base = &recvhdr;
@@ -341,7 +341,9 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 //	n = dg_send( sockfd, sendline, strlen( sendline ), recvline, MAXLINE, pservaddr, servlen );
 
 //	while( n = recv( sockfd, recvline, MAXLINE, 0 ) > 0 )
-
+	bzero( &ss, sizeof( ss ) );
+	slen = sizeof( ss );
+	
 	while( n = dg_recieve( sockfd, recvline, MAXLINE, &ss, slen ) > 0 )
 	{
 		printf("%s\n", recvline );
