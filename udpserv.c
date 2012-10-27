@@ -279,9 +279,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 {
 	int						n;
 	char					mesg[MAXLINE];
-	socklen_t				len, slen;
+	socklen_t				len, slen, slen1;
 	int 					connfd;
-	struct sockaddr_in      ss;
+	struct sockaddr_in      ss, ss1;
 	char 					IPServer[20], IPClient[20];
 	FILE 					*ifp;
 	ssize_t					bytes;
@@ -318,8 +318,20 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		exit(1);
 	}	
 
+	if( getpeername( connfd, (SA *)&ss1, &slen1 ) < 0 )
+	{
+		printf( "peername error\n" );
+		exit(1);
+	}
+
+	inet_ntop( AF_INET, &(ss1.sin_addr), IPClient, MAXLINE );
+
+	printf( "******************* dg_send() *********************\n" );
+ 	printf( "dg_send(): Destination Address :  %s\n",IPClient );
+	printf( "dg_send(): Destination Port : %d\n", ss1.sin_port );
+
+
 	sprintf( mesg, "%d\n", ss.sin_port );
-	
 	printf("THIS IS THE MESSAGE I AM SENDING TO CLIENT : %s\n", mesg );
 
 	if( sendto( sockfd, mesg, sizeof( mesg ), 0, cliaddr, clilen) < 0 ) 
@@ -352,8 +364,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 //	struct sockaddr_in test = malloc( sizeof( struct ) )
 //	*cliaddr;
 		
-	printf("dg_send(): Destination Address : %s\n", inet_ntop( AF_INET, &(cliaddr->sin_addr), IPClient, MAXLINE ));
-	printf( "dg_send(): Destination Port: %d\n", &(cliaddr->sin_port) );
+//	printf("dg_send(): Destination Address : %s\n", inet_ntop( AF_INET, &(cliaddr->sin_addr), IPClient, MAXLINE ));
+//	printf( "dg_send(): Destination Port: %d\n", &(cliaddr->sin_port) );
 
 	//	send( connfd, sendline, strlen( sendline ), 0 );
 
