@@ -279,6 +279,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
  	printf( "recvmsg(): Destination Address :  %s\n",IPClient );
 	printf( "recvmsg(): Destination Port : %d\n", ss1.sin_port );
 
+	memset(&msgrecv, '\0', sizeof(msgrecv)); 
+	
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
 	msgrecv.msg_iov = iovrecv;
@@ -290,10 +292,14 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
 
 
 	printf("Just about to recvmsg()..\n");
-	recv( fd, &recvhdr, sizeof(struct hdr), 0 );
-	recv( fd, inbuff, inbytes, 0 );
+	//recv( fd, &recvhdr, sizeof(struct hdr), 0 );
+	//recv( fd, inbuff, inbytes, 0 );
 
-//	n = Recvmsg( fd, &msgrecv, 0);
+	if( n = Recvmsg( fd, &msgrecv, 0) < 0 ) 
+	{
+		printf("Error in RecvMsg!!\n");
+	}	
+	
 	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 
 	return ( n- sizeof(struct hdr) );
