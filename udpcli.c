@@ -276,8 +276,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes, const SA *destaddr, so
  	printf( "recvmsg(): Destination Address :  %s\n",IPClient );
 	printf( "recvmsg(): Destination Port : %d\n", ss1.sin_port );
 
-	msgrecv.msg_name = &(ss1.sin_addr);
-	msgrecv.msg_namelen = slen1;
+	msgrecv.msg_name = destaddr;
+	msgrecv.msg_namelen = destlen;
 	msgrecv.msg_iov = iovrecv;
 	msgrecv.msg_iovlen = 2;
 	iovrecv[0].iov_base = &recvhdr;

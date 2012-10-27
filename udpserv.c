@@ -362,7 +362,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 //	{
 		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
-		printf("Calling dg_send() with picked up data..\n");
+		printf("Calling dg_send() with picked up data : %s \n", sendline );
 
 //	struct sockaddr_in test = malloc( sizeof( struct ) )
 //	*cliaddr;
