@@ -1,6 +1,9 @@
 #include	"unpifiplus.h"
 #include	<string.h>
 #include 	<arpa/inet.h>
+#include		"unprtt.h"
+#include		<setjmp.h>
+#include 	<sys/socket.h>
 
 #undef MAXLINE
 #define MAXLINE 65507

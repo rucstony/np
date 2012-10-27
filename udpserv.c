@@ -1,6 +1,7 @@
 #include        "unpifiplus.h"
 #include		"unprtt.h"
 #include		<setjmp.h>
+#include 	<sys/socket.h>
 
 static struct rtt_info   rttinfo;
 static int				 rttinit = 0;
