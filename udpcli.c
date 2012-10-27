@@ -301,8 +301,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 	printf(" %s\n", inbuff );
 
-//	return (n);
-	return ( n- sizeof(struct hdr) );
+	return (1);
+//	return ( n- sizeof(struct hdr) );
 }
 
 void update_ack()
