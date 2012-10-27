@@ -282,7 +282,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	socklen_t				len, slen;
 	int 					connfd;
 	struct sockaddr_in      ss;
-	char 					IPServer[20];
+	char 					IPServer[20], IPClient[20];
 	FILE 					*ifp;
 	ssize_t					bytes;
 	char					sendline[MAXLINE], recvline[MAXLINE + 1];
@@ -348,8 +348,13 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
 		printf("Calling dg_send() with picked up data..\n");
-		send( connfd, sendline, strlen( sendline ), 0 );
-		//bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
+
+	printf("dg_send(): Destination Address : %s\n", inet_ntop( AF_INET, cliaddr->sin_addr, IPClient, MAXLINE ));
+	printf( "dg_send(): Destination Port: %d\n", cliaddr->sin_port );
+
+	//	send( connfd, sendline, strlen( sendline ), 0 );
+
+		bytes = dg_send( connfd, sendline, strlen( sendline ), recvline, MAXLINE, cliaddr, clilen );
 //	}
 
 
