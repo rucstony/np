@@ -295,7 +295,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	if( n = recvmsg( fd, &msgrecv, 0) < 0 ) 
 	{
 		printf("Error in RecvMsg!!\n");
-		perror("recvmsg");
+		printf("Error no : %d\n", errno );
 		exit(0);
 	}
 		
