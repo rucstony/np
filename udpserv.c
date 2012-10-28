@@ -381,14 +381,12 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	int buffer_position, sequence_number = 0;
 
 	printf("Sending file to the client..TONY IS AN ASSHOLE\n");	
-	//while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
-	//{
+	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+	{
 
 //		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
-		memset( sendline, '\0', sizeof( sendline ) );
-
-		strcpy( sendline, "TONY IS AN ASSHOLE\n" );
+	
 		printf("Calling dg_send() with picked up data : %s \n", sendline );
 
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
@@ -401,5 +399,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			dg_recieve_ack( connfd );
 		}	
 		sequence_number++;
-	//}
+
+		memset( sendline, '\0', sizeof( sendline ) );
+
+	}
 }
