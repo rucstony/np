@@ -437,7 +437,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	//{
 	//	printf("%s\n", recvline );
 		n = dg_recieve( sockfd, recvline, MAXLINE );	
-		printf( "Received datagram from server child of %d bytes..\n", n );	
+		printf( "TONY IS AN ASSHOLE of %d bytes..\n", n );	
 		printf( "%s\n",recvline );	
 		/* After this send ACK */
 		printf("Attempting to send an ACK..\n");

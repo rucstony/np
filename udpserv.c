@@ -376,13 +376,13 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 	int buffer_position, sequence_number = 0;
 
-	printf("Sending file to the client..\n");	
+	printf("Sending file to the client..TONY IS AN ASSHOLE\n");	
 	//while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
 	//{
 
 //		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
-		strcpy( sendline, "This is a test string\n" );
+		strcpy( sendline, "TONY IS AN ASSHOLE\n" );
 		printf("Calling dg_send() with picked up data : %s \n", sendline );
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
 		printf("Buffer position : %d\n", buffer_position );
