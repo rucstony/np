@@ -382,6 +382,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 //		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
+		memset( sendline, '\0', sizeof( sendline ) );
+
 		strcpy( sendline, "TONY IS AN ASSHOLE\n" );
 		printf("Calling dg_send() with picked up data : %s \n", sendline );
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
