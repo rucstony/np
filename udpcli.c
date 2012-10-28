@@ -433,9 +433,10 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
 
-	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
-	{
+	//while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
+	//{
 	//	printf("%s\n", recvline );
+		n = dg_recieve( sockfd, recvline, MAXLINE );	
 		printf( "Received datagram from server child of %d bytes..\n", n );	
 		printf( "%s\n",recvline );	
 		/* After this send ACK */
@@ -457,5 +458,5 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		
 		printf("Returning to recvmsg()..\n");
 		memset( recvline, '\0', sizeof( recvline ) );
-	}	
+	//}	
 }
