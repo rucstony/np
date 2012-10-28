@@ -383,8 +383,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	memset( sendline, '\0', sizeof( sendline ) );
 
 	printf("Sending file to the client..\n");	
-//	while( fread( sendline, 1, MAXLINE, ifp ) != NULL )
-	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+//	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+	while( fread( sendline, 1, MAXLINE, ifp ) != NULL )
 	{
 		printf("***************************************************************************************\n");
 		printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, strlen(sendline) );
