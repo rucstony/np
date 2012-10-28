@@ -305,6 +305,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
 	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
 
+	printf("N value : %d\n",n );
 //	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%max_window_size );
 //	occupied = (recvhdr.seq)%max_window_size;
 
