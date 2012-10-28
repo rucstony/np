@@ -290,16 +290,16 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	iovrecv[0].iov_len = sizeof(struct hdr);
 	iovrecv[1].iov_base = inbuff;
 	iovrecv[1].iov_len = inbytes;
-	/*
-	if( n = Recvmsg( fd, &msgrecv, 0) < 0 ) 
+	
+	if( n = recvmsg( fd, &msgrecv, 0) < 0 ) 
 	{
 		printf("Error in RecvMsg!!\n");
 	}
-	*/	
-	inbytes = sizeof( inbuff );
+		
+	//inbytes = sizeof( inbuff );
 
 //	recv( fd, &recvhdr, sizeof(struct hdr), 0 );	
-	recv( fd, inbuff, inbytes, 0 );	
+//	recv( fd, inbuff, inbytes, 0 );	
 	
 	printf("RECEIVED DATAGRAM : %s\n", inbuff );
 	printf("DATAGRAM SIZE : %d\n", inbytes );

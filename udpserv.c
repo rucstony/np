@@ -240,9 +240,9 @@ sendagain:
 
 	printf( "Calling sendmsg() function now..\n" );	
 	int n1;
-	Sendmsg( fd, &msgsend, 0 );
+	n1 = sendmsg( fd, &msgsend, 0 );
 	printf("Sent message : %s of size %d \n", iovsend[1].iov_base, iovsend[1].iov_len );
-	/*
+	
 	if( n1 > 0 )
 	{	
 		printf( "Completed sending packet.. with %d bytes...\n", n1 );	
@@ -251,7 +251,7 @@ sendagain:
 	{
 		printf("Failed to send..\n");
 	}	
-*/
+
 	alarm( rtt_start( &rttinfo ) ); 	/* calc timeout value & start timer */
 
 	if ( sigsetjmp( jmpbuf, 1 ) != 0 ) 
