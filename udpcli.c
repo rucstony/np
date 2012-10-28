@@ -436,7 +436,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	//while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	//{
 	//	printf("%s\n", recvline );
-		memset( recvline, '\0', sizeof( recvline ) );
+//		memset( recvline, '\0', sizeof( recvline ) );
 
 		n = dg_recieve( sockfd, recvline, MAXLINE );	
 		printf( "TONY IS AN ASSHOLE of %d bytes..\n", n );	
@@ -459,6 +459,6 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		printf("*****************************************\n");
 		
 		printf("Returning to recvmsg()..\n");
-		memset( recvline, '\0', sizeof( recvline ) );
+//		memset( recvline, '\0', sizeof( recvline ) );
 	//}	
 }
