@@ -300,7 +300,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	inbytes = sizeof( inbuff );
 
 	printf("RECEIVED DATAGRAM : %s\n", iovrecv[1].iov_base );
-	printf("MY DATAGRAM SIZE : %d\n", sizeof(iovrecv[1].iov_base) );
+	printf("MY DATAGRAM SIZE : %d\n", strlen(iovrecv[1].iov_base) );
 
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
 	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
