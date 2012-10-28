@@ -305,14 +305,13 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
 	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
 
-	printf("N value : %d\n",n );
 //	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%max_window_size );
 //	occupied = (recvhdr.seq)%max_window_size;
 
 //	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 //	printf(" %s\n", inbuff );
 
-	return (n);
+	return (1);
 //	return ( n- sizeof(struct hdr) );
 }
 
@@ -359,18 +358,12 @@ ssize_t dg_send_ack( int fd )
 	msgrecv.msg_iovlen = 1;
 	iovrecv[0].iov_base = &recvhdr;
 	iovrecv[0].iov_len = sizeof( struct hdr );
-//	iovrecv[1].iov_base = inbuff;
-//	iovrecv[1].iov_len = inbytes;
 
 	if( n = sendmsg( fd, &msgrecv, 0) < 0 ) 
 	{
 		printf("Error in SendMsg!!\n");
 	}	
 
-//	printf("We just recvmsg()'ed !.. %s\n", inbuff );
-//	printf(" %s\n", inbuff );
-
-//	return (n);
 	return ( n );
 }
 

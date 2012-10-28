@@ -269,7 +269,7 @@ sendagain:
 	alarm(0);		
 
 	rtt_stop( &rttinfo, rtt_ts(&rttinfo) - recvhdr.ts );
-	return( (sendhdr.seq)%max_window_size );	/* return size of received datagram */
+	return( (sendhdr.seq)%max_window_size );	
 }
 
 static void sig_alrm( int signo )
@@ -384,7 +384,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	memset( sendline, '\0', sizeof( sendline ) );
 
 	printf("Sending file to the client..\n");	
-	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+//	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+	while( fread( sendline, 1, MAXLINE, ifp ) != NULL )
 	{
 		printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, strlen(sendline) );
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
