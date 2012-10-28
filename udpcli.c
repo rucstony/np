@@ -374,9 +374,11 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	int 					size;
 	char 					sendline[MAXLINE], recvline[MAXLINE + 1];
 	ssize_t					n;
+	size_t 					inbytes;
 	socklen_t 				slen;
 	struct sockaddr_in      ss;
 	char 					IPServer[20];	
+
 
 	printf("Initializing the recieve window start and end..\n");
 	rwnd_start = 0 ; 
@@ -431,7 +433,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
 
-	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
+	while( ( n = dg_recieve( sockfd, recvline, inbytes ) ) > 0 )
 	{
 	//	printf("%s\n", recvline );
 		printf( "Received datagram from server child of %d bytes..\n", n );	
