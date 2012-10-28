@@ -452,5 +452,6 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		printf("*****************************************\n");
 		
 		printf("Returning to recvmsg()..\n");
+		memset( recvline, '\0', sizeof( recvline ) );
 	}	
 }
