@@ -433,7 +433,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	{
 	//	printf("%s\n", recvline );
 		printf( "Received datagram from server child of %d bytes..\n", n );	
-		
+		printf( "%s\n",recvline );	
 		/* After this send ACK */
 		printf("Attempting to send an ACK..\n");
 		dg_send_ack( sockfd );
