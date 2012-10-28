@@ -281,6 +281,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	char 			IPClient[20];
 
 	memset( &msgrecv, '\0', sizeof(msgrecv) ); 
+	memset( &recvhdr, '\0', sizeof(recvhdr) ); 
 	
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
@@ -298,9 +299,6 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		
 	//inbytes = sizeof( inbuff );
 
-//	recv( fd, &recvhdr, sizeof(struct hdr), 0 );	
-//	recv( fd, inbuff, inbytes, 0 );	
-	
 	printf("RECEIVED DATAGRAM : %s\n", inbuff );
 	printf("DATAGRAM SIZE : %d\n", inbytes );
 

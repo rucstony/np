@@ -11,6 +11,9 @@ static struct hdr
 {
   uint32_t	seq;	/* sequence # */
   uint32_t	ts;		/* timestamp when sent */
+  uint32_t	ack_no;	/* sequence # */  		
+  uint32_t	recv_window_advertisement;	/* sequence # */  		
+
 } sendhdr, recvhdr;
 
 static void	sig_alrm( int signo );
