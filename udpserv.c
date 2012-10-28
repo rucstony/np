@@ -219,7 +219,6 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
-	
 
 	sendhdr.seq = sequence_number;
 	msgsend.msg_name = NULL;
@@ -230,7 +229,6 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 	iovsend[0].iov_len = sizeof(struct hdr);
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
-
 
 	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%max_window_size );
 	swnd[ (sendhdr.seq)%max_window_size ] = msgsend;
@@ -383,16 +381,14 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 	int buffer_position, sequence_number = 0;
 
-	printf("Sending file to the client..TONY IS AN ASSHOLE\n");	
+	memset( sendline, '\0', sizeof( sendline ) );
+
+	printf("Sending file to the client..\n");	
 	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
 	{
-
-//		fgets( sendline, MAXLINE, ifp );
-		/* Pick the data from the file  */ 
-	
 		printf("Calling dg_send() with picked up data : %s \n", sendline );
-
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
+
 		printf("Buffer position : %d\n", buffer_position );
 
 		if( buffer_position == ( max_window_size - 1 )  )

@@ -297,7 +297,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		printf("Error in RecvMsg!!\n");
 	}
 		
-	//inbytes = sizeof( inbuff );
+	inbytes = sizeof( inbuff );
 
 	printf("RECEIVED DATAGRAM : %s\n", inbuff );
 	printf("DATAGRAM SIZE : %d\n", inbytes );
