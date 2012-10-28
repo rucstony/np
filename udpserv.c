@@ -214,8 +214,8 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 	}
 
 	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
-	memset( &msgsend, '\0', sizeof( msgsend ) ); 
-	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
+//	memset( &msgsend, '\0', sizeof( msgsend ) ); 
+//	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 	
 
 	sendhdr.seq = sequence_number;
