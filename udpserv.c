@@ -214,8 +214,8 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 	}
 
 	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
-//	memset( &msgsend, '\0', sizeof( msgsend ) ); 
-//	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
+	memset( &msgsend, '\0', sizeof( msgsend ) ); 
+	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 	
 
 	sendhdr.seq = sequence_number;
@@ -241,7 +241,7 @@ sendagain:
 	printf( "Calling sendmsg() function now..\n" );	
 	int n1;
 	n1 = sendmsg( fd, &msgsend, 0 );
-	printf("Sent message : %s of size %d \n", outbuff, outbytes );
+	printf("Sent message : %s of size %d \n", iovsend[1].iov_base, iovsend[1].iov_len );
 	if( n1 > 0 )
 	{	
 		printf( "Completed sending packet.. with %d bytes...\n", n1 );	

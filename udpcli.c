@@ -280,7 +280,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	struct iovec	iovrecv[2];
 	char 			IPClient[20];
 
-//	memset(&msgrecv, '\0', sizeof(msgrecv)); 
+	memset(&msgrecv, '\0', sizeof(msgrecv)); 
 	
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
@@ -436,7 +436,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	//while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	//{
 	//	printf("%s\n", recvline );
-//		memset( recvline, '\0', sizeof( recvline ) );
+		memset( recvline, '\0', sizeof( recvline ) );
 
 		n = dg_recieve( sockfd, recvline, MAXLINE );	
 		printf( "TONY IS AN ASSHOLE of %d bytes..\n", n );	
@@ -459,6 +459,6 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		printf("*****************************************\n");
 		
 		printf("Returning to recvmsg()..\n");
-//		memset( recvline, '\0', sizeof( recvline ) );
+		memset( recvline, '\0', sizeof( recvline ) );
 	//}	
 }
