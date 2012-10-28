@@ -242,7 +242,6 @@ sendagain:
 	printf( "Calling sendmsg() function now..\n" );	
 	int n1;
 	n1 = sendmsg( fd, &msgsend, 0 );
-	printf("Sent message : %s of size %d \n", iovsend[1].iov_base, iovsend[1].iov_len );
 	
 	if( n1 > 0 )
 	{	
@@ -387,7 +386,10 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 //	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
 	while( fread( sendline, 1, MAXLINE, ifp ) != NULL )
 	{
+		printf("***************************************************************************************\n");
 		printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, strlen(sendline) );
+		printf("***************************************************************************************\n");
+
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
 
 		printf("Buffer position : %d\n", buffer_position );
