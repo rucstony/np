@@ -295,6 +295,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	{
 		printf("Error in RecvMsg!!\n");
 	}	
+	printf("RECEIVED DATAGRAM : %s\n", inbuff );
+	printf("DATAGRAM SIZE : %s\n", inbytes );
 
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
 	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
