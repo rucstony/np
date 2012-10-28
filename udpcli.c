@@ -437,12 +437,10 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
 
+	memset( recvline, '\0', sizeof( recvline ) );
+
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
-	//	printf("%s\n", recvline );
-		memset( recvline, '\0', sizeof( recvline ) );
-
-		n = dg_recieve( sockfd, recvline, MAXLINE );	
 		printf( "Recieved message of %d bytes..\n", n );	
 		printf( "%s\n",recvline );	
 		/* After this send ACK */
