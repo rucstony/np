@@ -298,7 +298,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	*/	
 	inbytes = sizeof( inbuff );
 
-	recv( fd, &recvhdr, sizeof(struct hdr), 0 );	
+//	recv( fd, &recvhdr, sizeof(struct hdr), 0 );	
 	recv( fd, inbuff, inbytes, 0 );	
 	
 	printf("RECEIVED DATAGRAM : %s\n", inbuff );
