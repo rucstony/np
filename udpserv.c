@@ -241,6 +241,7 @@ sendagain:
 	printf( "Calling sendmsg() function now..\n" );	
 	int n1;
 	n1 = sendmsg( fd, &msgsend, 0 );
+	printf("Sent message : %s of size %d \n", outbuff, outbytes );
 	if( n1 > 0 )
 	{	
 		printf( "Completed sending packet.. with %d bytes...\n", n1 );	
