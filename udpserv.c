@@ -377,8 +377,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	int buffer_position, sequence_number = 0;
 
 	printf("Sending file to the client..\n");	
-	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
-	{
+	//while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+	//{
 
 //		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
@@ -393,5 +393,5 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			dg_recieve_ack( connfd );
 		}	
 		sequence_number++;
-	}
+	//}
 }
