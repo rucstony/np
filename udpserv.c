@@ -217,6 +217,7 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 	
+
 	sendhdr.seq = sequence_number;
 	msgsend.msg_name = NULL;
 	msgsend.msg_namelen = NULL;
@@ -381,6 +382,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 //		fgets( sendline, MAXLINE, ifp );
 		/* Pick the data from the file  */ 
+		strcpy( sendline, "This is a test string" );
 		printf("Calling dg_send() with picked up data : %s \n", sendline );
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
 		printf("Buffer position : %d\n", buffer_position );
