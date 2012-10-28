@@ -40,6 +40,7 @@ static struct hdr
   uint32_t	seq;	/* sequence # */
   uint32_t	ts;		/* timestamp when sent */
   uint32_t	ack_no;	/* sequence # */  		
+  uint32_t	recv_window_advertisement;	/* sequence # */  		
 
 }recvhdr;
 
@@ -313,9 +314,11 @@ void update_ack()
 	while(1)
 	{
 		
-		if( rwnd[ global_ack_number%max_window_size ].msg_iov != NULL )
+		if( rwnd[ global_ack_number%max_window_size ].msg_iovlen != NULL )
 		{
+			printf("IS NULL? :: %d\n", rwnd[ global_ack_number%max_window_size ].msg_iovlen );	
 			printf("Incrementing global_ack_number from %d\n", global_ack_number ); 
+
 			global_ack_number++;
 		}
 		else
@@ -341,6 +344,8 @@ ssize_t dg_send_ack( int fd )
 	update_ack();
 
 	recvhdr.ack_no = global_ack_number;
+	recvhdr.recv_window_advertisement = max_window_size - rwnd_start - 1 ;
+
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
 	msgrecv.msg_iov = iovrecv;
@@ -433,6 +438,9 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		printf("Attempting to send an ACK..\n");
 		dg_send_ack( sockfd );
 
+		printf("Removing the ACK'ed segment from the window..\n");
+		memset( rwnd[ (global_ack_number-1)%max_window_size ], '\0', sizeof( struct msghdr ) ); 
+
 		printf("Updating the start of the recieve window..\n");
 		rwnd_start = global_ack_number%max_window_size - 1 ;
 
@@ -443,5 +451,5 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		printf("*****************************************\n");
 		
 		printf("Returning to recvmsg()..\n");
-		}	
+	}	
 }

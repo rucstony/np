@@ -391,6 +391,4 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		}	
 		sequence_number++;
 	}
-
-
 }
