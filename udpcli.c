@@ -305,13 +305,13 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
 	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
 
-	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%max_window_size );
-	occupied = (recvhdr.seq)%max_window_size;
+//	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%max_window_size );
+//	occupied = (recvhdr.seq)%max_window_size;
 
 //	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 //	printf(" %s\n", inbuff );
 
-	return (1);
+	return (n);
 //	return ( n- sizeof(struct hdr) );
 }
 
@@ -443,7 +443,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		memset( recvline, '\0', sizeof( recvline ) );
 
 		n = dg_recieve( sockfd, recvline, MAXLINE );	
-		printf( "TONY IS AN ASSHOLE of %d bytes..\n", n );	
+		printf( "Recieved message of %d bytes..\n", n );	
 		printf( "%s\n",recvline );	
 		/* After this send ACK */
 		printf("Attempting to send an ACK..\n");
