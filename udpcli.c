@@ -292,7 +292,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	iovrecv[1].iov_base = inbuff;
 	iovrecv[1].iov_len = inbytes;
 	
-	if( n = recvmsg( fd, &msgrecv, 0) < 0 ) 
+	if( n = Recvmsg( fd, &msgrecv, 0) < 0 ) 
 	{
 		printf("Error in RecvMsg!!\n");
 		printf("Error no : %d\n", errno );
@@ -433,7 +433,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
 
-	memset( recvline, '\0', sizeof( recvline ) );
+//	memset( recvline, '\0', sizeof( recvline ) );
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
@@ -457,6 +457,6 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		printf("*****************************************\n");
 		
 		printf("Returning to recvmsg()..\n");
-		memset( recvline, '\0', sizeof( recvline ) );
+//		memset( recvline, '\0', sizeof( recvline ) );
 	}	
 }
