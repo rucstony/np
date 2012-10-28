@@ -220,13 +220,14 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 
 	sendhdr.seq = sequence_number;
 	msgsend.msg_name = NULL;
-	msgsend.msg_namelen = NULL;
+	msgsend.msg_namelen = 0;
 	msgsend.msg_iov = iovsend;
 	msgsend.msg_iovlen = 2;
 	iovsend[0].iov_base = &sendhdr;
 	iovsend[0].iov_len = sizeof(struct hdr);
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
+
 
 	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%max_window_size );
 	swnd[ (sendhdr.seq)%max_window_size ] = msgsend;
