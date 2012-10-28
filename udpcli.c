@@ -439,7 +439,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		dg_send_ack( sockfd );
 
 		printf("Removing the ACK'ed segment from the window..\n");
-		memset( rwnd[ (global_ack_number-1)%max_window_size ], '\0', sizeof( struct msghdr ) ); 
+		bzero( rwnd[ (global_ack_number-1)%max_window_size ], sizeof( struct msghdr ) ); 
 
 		printf("Updating the start of the recieve window..\n");
 		rwnd_start = global_ack_number%max_window_size - 1 ;
