@@ -386,7 +386,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	printf("Sending file to the client..\n");	
 	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
 	{
-		printf("Calling dg_send() with picked up data : %s \n", sendline );
+		printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, sizeof(sendline) );
 		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
 
 		printf("Buffer position : %d\n", buffer_position );
