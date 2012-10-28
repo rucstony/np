@@ -1,1 +1,1 @@
-Anthony Kunnel Jose
+In probability theory, the Chernoff bound, named after Herman Chernoff, gives exponentially decreasing bounds on tail distributions of sums of independent random variables. It is a sharper bound than the known first or second moment based tail bounds such as Markov's inequality or Chebyshev inequality, which only yield power-law bounds on tail decay. However, the Chernoff bound requires that the variates be independent - a condition that neither the Markov nor the Chebyshev inequalities require.
