@@ -280,7 +280,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	struct iovec	iovrecv[2];
 	char 			IPClient[20];
 
-	memset(&msgrecv, '\0', sizeof(msgrecv)); 
+//	memset(&msgrecv, '\0', sizeof(msgrecv)); 
 	
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
@@ -296,7 +296,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		printf("Error in RecvMsg!!\n");
 	}	
 	printf("RECEIVED DATAGRAM : %s\n", inbuff );
-	printf("DATAGRAM SIZE : %s\n", inbytes );
+	printf("DATAGRAM SIZE : %d\n", inbytes );
 
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
 	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
