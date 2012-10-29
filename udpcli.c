@@ -292,7 +292,7 @@ void update_nr( int packet_sequence_number )
 	if( recvhdr.seq == nr )
 	{
 		nr = nr + 1;
-		while( rwnd[ nr ] != NULL || nr < ns )
+		while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
 		{
 			nr++;
 		}
