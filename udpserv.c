@@ -5,7 +5,7 @@
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define INT_MAX  +32767
-#define PACKET_SIZE 512
+#define PACKET_SIZE 50
 
 static struct rtt_info   rttinfo;
 static int				 rttinit = 0;
