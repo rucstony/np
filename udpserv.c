@@ -483,6 +483,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	while(1)
 	{	
 		sender_usable_window = sender_window_size - ( nt - na ) ;	
+		printf("Sender usable window : %d\n recv_advertisement : %d\n",sender_usable_window, recv_advertisement );
 		j = MIN( sender_usable_window , recv_advertisement );
 	
 		if( j == 0 )
