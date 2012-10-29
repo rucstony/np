@@ -478,7 +478,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	printf("Sending file to the client..\n");	
 //	while ( fgets( sendline, MAXLINE, ifp ) != NULL )
 	int j, sender_usable_window;
-	while(true)
+	while(1)
 	{	
 		sender_usable_window = sender_window_size - ( nt - na ) ;	
 		j = MIN( sender_usable_window , recv_advertisement );
