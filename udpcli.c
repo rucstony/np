@@ -438,7 +438,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
 
-//	memset( recvline, '\0', sizeof( recvline ) );
+	memset( recvline, '\0', sizeof( recvline ) );
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
@@ -455,6 +455,6 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 //		memset( tmp, '\0', sizeof( struct msghdr ) ); 
 
 		printf("Returning to recvmsg()..\n");
-//		memset( recvline, '\0', sizeof( recvline ) );
+		memset( recvline, '\0', sizeof( recvline ) );
 	}	
 }
