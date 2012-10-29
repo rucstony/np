@@ -27,9 +27,6 @@ static struct msghdr	msgrecv, *tmp;
 int 		  		  global_ack_number = 0;
 
 static struct msghdr  *rwnd; 
-int 				  rwnd_start;
-int 				  rwnd_end;
-int 				  occupied = -1;
 
 /* Sliding window protocol */
 int 	reciever_window_size;
@@ -336,38 +333,9 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	update_ns( recvhdr.seq );
 	update_nr( recvhdr.seq );
 
-//	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%reciever_window_size );
-//	occupied = (recvhdr.seq)%reciever_window_size;
-
-//	printf("We just recvmsg()'ed !.. %s\n", inbuff );
-//	printf(" %s\n", inbuff );
-
 	return (1);
 //	return ( n- sizeof(struct hdr) );
 }
-
-void update_ack()
-{
-	while(1)
-	{
-		
-		if( rwnd[ global_ack_number%reciever_window_size ].msg_iovlen != NULL )
-		{
-			printf("IS NULL? :: %d\n", rwnd[ global_ack_number%reciever_window_size ].msg_iovlen );	
-			printf("Incrementing global_ack_number from %d\n", global_ack_number ); 
-
-			global_ack_number++;
-		}
-		else
-		{
-			break;
-		}	
-	}
-	printf("Current global Acknowledgement Number is %d..\n", global_ack_number );
-
-	return;
-}
-
 
 ssize_t dg_send_ack( int fd )
 {
@@ -378,10 +346,8 @@ ssize_t dg_send_ack( int fd )
 	memset( &msgrecv, '\0', sizeof( msgrecv ) ); 
 	memset( &recvhdr, '\0', sizeof( recvhdr ) ); 
 	
-	update_ack();
-
 	recvhdr.ack_no = nr;
-	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed) ;
+	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed - 1 ) ;
 
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
@@ -398,6 +364,18 @@ ssize_t dg_send_ack( int fd )
 	return ( n );
 }
 
+void status_print()
+{
+	printf("***********************************************************\n");
+	printf("STATUS PRINT\t\t\n");
+	printf("***********************************************************\n");
+	nr, ns, consumed 
+	printf("Nr / Acknowledgement Number : %d\n",nr );
+	printf("Ns  : %d\n",ns );
+	printf("Consumed : %d\n",consumed );
+	printf("***********************************************************\n");
+}
+
 void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] )
 {
 	int 					size;
@@ -409,10 +387,6 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	char 					IPServer[20];	
 
 
-	printf("Initializing the recieve window start and end..\n");
-	rwnd_start = 0 ; 
-	rwnd_end   = reciever_window_size - 1 ;
-	
 	if( connect( sockfd, pservaddr, servlen ) < 0 )
 	{
 		printf( "Error in connecting to server..\n" );
@@ -470,21 +444,14 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		printf( "%s\n",recvline );	
 
 		printf("Attempting to send an ACK..\n");
+		status_print();
 		dg_send_ack( sockfd );
-
+		status_print();
+	
 //		printf("Removing the ACK'ed segment from the window..\n");
 //		tmp = &( rwnd[ (global_ack_number-1)%reciever_window_size ] );
 //		memset( tmp, '\0', sizeof( struct msghdr ) ); 
 
-		printf("Updating the start of the recieve window..\n");
-		rwnd_start = global_ack_number%reciever_window_size - 1 ;
-
-		printf("*****************************************\n");
-		printf( "rwnd_start : %d\n", rwnd_start );
-		printf( "rwnd_end : %d\n", rwnd_end );
-		printf( "occupied : %d\n", occupied );
-		printf("*****************************************\n");
-		
 		printf("Returning to recvmsg()..\n");
 //		memset( recvline, '\0', sizeof( recvline ) );
 	}	

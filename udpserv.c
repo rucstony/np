@@ -392,6 +392,19 @@ int dg_recieve_ack( int fd )
 	update_na( recvhdr.ack_no );
 	return 1;
 }
+
+void status_report()
+{
+	printf("***********************************************************\n");
+	printf("STATUS PRINT\t\t\n");
+	printf("***********************************************************\n");
+	printf("Recv advertisement : %d\n",recv_advertisement );
+	printf("First unacked packet - Na  : %d\n",na );
+	printf("Packet to be transmitted next : %d\n",nt );
+	printf("Global Sequence Number : %d\n",global_sequence_number );
+	printf("***********************************************************\n");
+
+}
 		
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename )
 {
@@ -491,6 +504,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		if( j == 0 )
 		{
 			dg_recieve_ack( connfd );
+			printf("After j==0 dg_recieve_ack\n");
+			status_report();
 		}	
 		else if( fread( sendline, 1, MAXLINE, ifp ) != NULL )
 		{
@@ -499,6 +514,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			printf("***************************************************************************************\n");
 
 			buffer_position = dg_send( connfd, sendline, strlen( sendline ) );
+			printf("After dg_send\n");
+			status_report();
 
 			printf("Buffer position : %d\n", buffer_position );	
 
@@ -509,6 +526,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			while( na != nt )
 			{	
 				dg_recieve_ack( connfd );
+				printf("After na!=nt dg_recieve_ack\n");
+				status_report();
 			}	
 			break;
 		}	
