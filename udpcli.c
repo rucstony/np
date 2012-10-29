@@ -7,6 +7,8 @@
 
 #undef  MAXLINE
 #define MAXLINE 65507
+#define PACKET_SIZE 512
+
 typedef char* string; 
 
 typedef struct 
