@@ -4,6 +4,7 @@
 #include 		<sys/socket.h>
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define INT_MAX  +32767
 
 static struct rtt_info   rttinfo;
 static int				 rttinit = 0;
@@ -480,6 +481,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	printf("Sending file to the client..\n");	
 //	while ( fgets( sendline, MAXLINE, ifp ) != NULL )
 	int j, sender_usable_window;
+	recv_advertisement = INT_MAX;
 	while(1)
 	{	
 		sender_usable_window = sender_window_size - ( nt - na ) ;	
