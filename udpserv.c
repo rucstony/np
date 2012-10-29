@@ -396,7 +396,7 @@ int dg_recieve_ack( int fd )
 void status_report()
 {
 	printf("***********************************************************\n");
-	printf("STATUS PRINT\t\t\n");
+	printf("STATUS PRINT\n");
 	printf("***********************************************************\n");
 	printf("Recv advertisement : %d\n",recv_advertisement );
 	printf("First unacked packet - Na  : %d\n",na );

@@ -367,9 +367,8 @@ ssize_t dg_send_ack( int fd )
 void status_print()
 {
 	printf("***********************************************************\n");
-	printf("STATUS PRINT\t\t\n");
+	printf("STATUS PRINT\n");
 	printf("***********************************************************\n");
-	nr, ns, consumed 
 	printf("Nr / Acknowledgement Number : %d\n",nr );
 	printf("Ns  : %d\n",ns );
 	printf("Consumed : %d\n",consumed );
