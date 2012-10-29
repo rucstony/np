@@ -368,19 +368,25 @@ int dg_recieve_ack( int fd )
 		printf("Error no : %d\n", errno );
 		exit(0);
 	}
-		
-	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
-	rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
+	
 
-	printf( "Updating the reciever advertisement global variable with %d..\n", msgrecv.iovrecv[0].iov_base.recv_window_advertisement );
-	recv_advertisement = msgrecv.iovrecv[0].iov_base.recv_window_advertisement;
+//	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
+//	rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
+
+	//THIS WILL BE USED IF recvhdr.BLAH fails 
+//	printf( "Updating the reciever advertisement global variable with %d..\n", msgrecv.msg_iov[0].iov_base.recv_window_advertisement );
+//	recv_advertisement = msgrecv.msg_iov[0].iov_base.recv_window_advertisement;
+
+	printf( "Updating the reciever advertisement global variable with %d..\n", recvhdr.recv_window_advertisement );
+	recv_advertisement = recvhdr.recv_window_advertisement;
+
 //	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%reciever_window_size );
 //	occupied = (recvhdr.seq)%reciever_window_size;
 
 //	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 //	printf(" %s\n", inbuff );
 
-	update_na( acknowledgment_no );
+	update_na( recvhdr.ack_no );
 	return 1;
 }
 		
