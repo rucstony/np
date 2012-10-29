@@ -316,7 +316,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	iovrecv[0].iov_len = sizeof(struct hdr);
 	iovrecv[1].iov_base = inbuff;
 	iovrecv[1].iov_len = inbytes;
-	
+
+	/* this has to be changed  */	
 	if( n = Recvmsg( fd, &msgrecv, 0) < 0 ) 
 	{
 		printf("Error in RecvMsg!!\n");

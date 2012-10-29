@@ -508,7 +508,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			printf("After j==0 dg_recieve_ack\n");
 			status_report();
 		}	
-		else if( fread( sendline, 1, MAXLINE, ifp ) != NULL )
+		else if( fread( sendline, 1, PACKET_SIZE, ifp ) != NULL )
 		{
 			printf("***************************************************************************************\n");
 			printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, strlen(sendline) );
