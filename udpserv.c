@@ -3,6 +3,8 @@
 #include		<setjmp.h>
 #include 		<sys/socket.h>
 
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 static struct rtt_info   rttinfo;
 static int				 rttinit = 0;
 static struct msghdr	 msgsend, msgrecv, *tmp;	/* assumed init to 0 */
