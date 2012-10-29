@@ -31,8 +31,13 @@ int 				  rwnd_start;
 int 				  rwnd_end;
 int 				  occupied = -1;
 
-int 				  max_window_size;
+/* Sliding window protocol */
+int 	reciever_window_size;
+int 	nr = 0;
+int 	ns = 0;
 
+/* Consumed sequence numbers / datagrams */
+int consumed = -1;	
 
 static struct hdr 
 {
@@ -105,10 +110,10 @@ int main( int argc, char **argv )
 	fclose( ifp );
 	
 	printf("Creating the recieve window array dynamically for input window size..\n");
-	max_window_size = (int) atoi( configdata[3].data );
+	reciever_window_size = (int) atoi( configdata[3].data );
 
-	rwnd = (struct msghdr *) malloc( max_window_size*sizeof( struct msghdr ) );
-	memset( rwnd, '\0', max_window_size*sizeof( struct msghdr ) ); 
+	rwnd = (struct msghdr *) malloc( reciever_window_size*sizeof( struct msghdr ) );
+	memset( rwnd, '\0', reciever_window_size*sizeof( struct msghdr ) ); 
 
 
 	sprintf( IPServer, "%s", configdata[0].data );
@@ -274,6 +279,27 @@ int main( int argc, char **argv )
 	exit(0);
 }
 
+void update_ns( int packet_sequence_number )
+{
+	if( (packet_sequence_number + 1) > ns )
+	{
+		ns = packet_sequence_number + 1; 
+	}
+}
+
+void update_nr( int packet_sequence_number )
+{
+	if( recvhdr.seq == nr )
+	{
+		nr = nr + 1;
+		while( rwnd[ nr ] != NULL || nr < ns )
+		{
+			nr++;
+		}
+	}
+		
+}
+
 ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 {
 	ssize_t			n;
@@ -304,11 +330,14 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf("RECEIVED DATAGRAM : %s\n", iovrecv[1].iov_base );
 	printf("MY DATAGRAM SIZE : %d\n", strlen(iovrecv[1].iov_base) );
 
-	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%max_window_size );
-	rwnd[ (recvhdr.seq)%max_window_size ] = msgrecv;
+	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
+	rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
 
-//	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%max_window_size );
-//	occupied = (recvhdr.seq)%max_window_size;
+	update_ns( recvhdr.seq );
+	update_nr( recvhdr.seq );
+
+//	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%reciever_window_size );
+//	occupied = (recvhdr.seq)%reciever_window_size;
 
 //	printf("We just recvmsg()'ed !.. %s\n", inbuff );
 //	printf(" %s\n", inbuff );
@@ -322,9 +351,9 @@ void update_ack()
 	while(1)
 	{
 		
-		if( rwnd[ global_ack_number%max_window_size ].msg_iovlen != NULL )
+		if( rwnd[ global_ack_number%reciever_window_size ].msg_iovlen != NULL )
 		{
-			printf("IS NULL? :: %d\n", rwnd[ global_ack_number%max_window_size ].msg_iovlen );	
+			printf("IS NULL? :: %d\n", rwnd[ global_ack_number%reciever_window_size ].msg_iovlen );	
 			printf("Incrementing global_ack_number from %d\n", global_ack_number ); 
 
 			global_ack_number++;
@@ -351,8 +380,8 @@ ssize_t dg_send_ack( int fd )
 	
 	update_ack();
 
-	recvhdr.ack_no = global_ack_number;
-	recvhdr.recv_window_advertisement = max_window_size - rwnd_start - 1 ;
+	recvhdr.ack_no = nr;
+	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed) ;
 
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
@@ -382,7 +411,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 	printf("Initializing the recieve window start and end..\n");
 	rwnd_start = 0 ; 
-	rwnd_end   = max_window_size - 1 ;
+	rwnd_end   = reciever_window_size - 1 ;
 	
 	if( connect( sockfd, pservaddr, servlen ) < 0 )
 	{
@@ -439,16 +468,16 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	{
 		printf( "Recieved message of %d bytes..\n", n );	
 		printf( "%s\n",recvline );	
-		/* After this send ACK */
+
 		printf("Attempting to send an ACK..\n");
 		dg_send_ack( sockfd );
 
-		printf("Removing the ACK'ed segment from the window..\n");
-		tmp = &( rwnd[ (global_ack_number-1)%max_window_size ] );
-		memset( tmp, '\0', sizeof( struct msghdr ) ); 
+//		printf("Removing the ACK'ed segment from the window..\n");
+//		tmp = &( rwnd[ (global_ack_number-1)%reciever_window_size ] );
+//		memset( tmp, '\0', sizeof( struct msghdr ) ); 
 
 		printf("Updating the start of the recieve window..\n");
-		rwnd_start = global_ack_number%max_window_size - 1 ;
+		rwnd_start = global_ack_number%reciever_window_size - 1 ;
 
 		printf("*****************************************\n");
 		printf( "rwnd_start : %d\n", rwnd_start );

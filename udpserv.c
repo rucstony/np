@@ -5,7 +5,7 @@
 
 static struct rtt_info   rttinfo;
 static int				 rttinit = 0;
-static struct msghdr	 msgsend, msgrecv;	/* assumed init to 0 */
+static struct msghdr	 msgsend, msgrecv, *tmp;	/* assumed init to 0 */
 
 static struct hdr 
 {
@@ -29,7 +29,13 @@ typedef struct
 }socket_info;
 
 static struct msghdr  *swnd; 
-int 				  max_window_size;
+
+/* Sliding window data */
+int 	sender_window_size;
+int 	recv_advertisement;
+int 	na = -1;
+int 	nt =  0;
+int 	global_sequence_number = -1; 
 
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename );
 
@@ -78,8 +84,8 @@ int main(int argc, char **argv)
 	fclose( ifp );
 
 	printf("Creating the send window array dynamically for input window size..\n");
-	max_window_size = (int) atoi( configdata[1].data );
-	swnd = (struct msghdr *) malloc( max_window_size*sizeof( struct msghdr ) );
+	sender_window_size = (int) atoi( configdata[1].data );
+	swnd = (struct msghdr *) malloc( sender_window_size*sizeof( struct msghdr ) );
 
 	for ( ifihead = ifi = get_ifi_info_plus( AF_INET, 1 );
 		  ifi != NULL;
@@ -202,7 +208,7 @@ int main(int argc, char **argv)
 
 /***************************************************************************************************************************/
 
-int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_number )
+int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 {
 	ssize_t			n;
 	struct iovec	iovsend[2], iovrecv[2];
@@ -220,7 +226,7 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 
-	sendhdr.seq = sequence_number;
+	sendhdr.seq = global_sequence_number;
 	msgsend.msg_name = NULL;
 	msgsend.msg_namelen = 0;
 	msgsend.msg_iov = iovsend;
@@ -230,8 +236,8 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes, int sequence_n
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
 
-	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%max_window_size );
-	swnd[ (sendhdr.seq)%max_window_size ] = msgsend;
+	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%sender_window_size );
+	swnd[ (sendhdr.seq)%sender_window_size ] = msgsend;
 
 	signal(SIGALRM, sig_alrm);
 	rtt_newpack( &rttinfo );		/* initialize for this packet */
@@ -268,7 +274,7 @@ sendagain:
 	alarm(0);		
 
 	rtt_stop( &rttinfo, rtt_ts(&rttinfo) - recvhdr.ts );
-	return( (sendhdr.seq)%max_window_size );	
+	return( (sendhdr.seq)%sender_window_size );	
 }
 
 static void sig_alrm( int signo )
@@ -276,25 +282,106 @@ static void sig_alrm( int signo )
 	siglongjmp( jmpbuf, 1 );
 }
 
-int dg_send( int fd, const void *outbuff, size_t outbytes, int sequence_number )
+void update_nt()
+{
+	nt = global_sequence_number + 1;
+}
+
+void update_na_first_packet()
+{
+	if( global_sequence_number == 0 )
+	{
+		na = 0;
+	}	
+}
+
+int dg_send( int fd, const void *outbuff, size_t outbytes )
 {
 	int	n;
+	/* Incrementing the sequence number counter to assign seq_no to packet being sent. */
+	global_sequence_number++;
 
-	printf( "Calling dg_send_packet() routine..\n" );
-	n = dg_send_packet( fd, outbuff, outbytes, sequence_number );
+	/* Check if swnd is full || recv_advertisement == 0  */
+//	if( (swnd[ sender_window_size - 1 ] != NULL) || recv_advertisement == 0 )
+//	{
+//		/* Recieve an ACK */
+//		dg_recieve_ack( fd );
+//	}	
+
+	n = dg_send_packet( fd, outbuff, outbytes );
 	if ( n < 0 )
 	{	
 		err_quit("dg_send_packet error");
 	}
-		
+	
+	/* Update nt = global_sequence_number + 1  */
+	update_nt();
+
+	/* If first packet.. Increment na */
+	update_na_first_packet();
+
 	return( n );
+}
+
+void delete_datasegment( na )
+{
+//	swnd[ na%sender_window_size ] = NULL;
+	printf("Deleting the ACK'ed segment after updating na..\n");
+	tmp = &( swnd[ na%sender_window_size ] );
+	memset( tmp, '\0', sizeof( struct msghdr ) ); 
+}
+
+/* acknowledgement number = seq# of highest acknowledged packet + 1 */
+void update_na( int acknowledgment_no )
+{
+	if( na < acknowledgment_no )
+	{
+		while( na != acknowledgment_no )
+		{
+			delete_datasegment( na );
+			na++;
+		}	
+	}	
 }
 
 /* Recieves the ack's that are sent after the buffer is full... */
 int dg_recieve_ack( int fd )
 {
 	printf("Recieving the ACK's...\n");
-	return 0;
+	ssize_t			n;
+	struct iovec	iovrecv[2];
+	char 			IPClient[20];
+
+	memset( &msgrecv, '\0', sizeof(msgrecv) ); 
+	memset( &recvhdr, '\0', sizeof(recvhdr) ); 
+	
+	msgrecv.msg_name = NULL;
+	msgrecv.msg_namelen = 0;
+	msgrecv.msg_iov = iovrecv;
+	msgrecv.msg_iovlen = 2;
+	iovrecv[0].iov_base = &recvhdr;
+	iovrecv[0].iov_len = sizeof(struct hdr);
+	
+	if( n = Recvmsg( fd, &msgrecv, 0) < 0 ) 
+	{
+		printf("Error in RecvMsg!!\n");
+		printf("Error no : %d\n", errno );
+		exit(0);
+	}
+		
+	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
+	rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
+
+	printf( "Updating the reciever advertisement global variable with %d..\n", msgrecv.iovrecv[0].iov_base.recv_window_advertisement );
+	recv_advertisement = msgrecv.iovrecv[0].iov_base.recv_window_advertisement;
+//	printf("Updating the occupied index to that of the newly inserted datagram.. %d\n", (recvhdr.seq)%reciever_window_size );
+//	occupied = (recvhdr.seq)%reciever_window_size;
+
+//	printf("We just recvmsg()'ed !.. %s\n", inbuff );
+//	printf(" %s\n", inbuff );
+
+	update_na( acknowledgment_no );
+	return 1;
 }
 		
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename )
@@ -378,31 +465,58 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	printf( "Picking data from the file..\n" );
 	ifp = fopen( filename, 	"r" );
 
-	int buffer_position, sequence_number = 0;
+	int buffer_position;
 
 	memset( sendline, '\0', sizeof( sendline ) );
 
 	printf("Sending file to the client..\n");	
-//	while ( fgets( sendline, MAXLINE, ifp ) != NULL ) 
+//	while ( fgets( sendline, MAXLINE, ifp ) != NULL )
+	int j, sender_usable_window;
+	while(true)
+	{	
+		sender_usable_window = sender_window_size - ( nt - na ) ;	
+		j = MIN( sender_usable_window , recv_advertisement );
+	
+		if( j == 0 )
+		{
+			dg_recieve_ack( connfd );
+		}	
+		else if( fread( sendline, 1, MAXLINE, ifp ) != NULL )
+		{
+			printf("***************************************************************************************\n");
+			printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, strlen(sendline) );
+			printf("***************************************************************************************\n");
+
+			buffer_position = dg_send( connfd, sendline, strlen( sendline ) );
+
+			printf("Buffer position : %d\n", buffer_position );	
+
+			memset( sendline, '\0', sizeof( sendline ) );
+		}
+		else
+		{
+			while( na != nt )
+			{	
+				dg_recieve_ack( connfd );
+			}	
+			break;
+		}	
+	}	
+
+/*
 	while( fread( sendline, 1, MAXLINE, ifp ) != NULL )
 	{
 		printf("***************************************************************************************\n");
 		printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, strlen(sendline) );
 		printf("***************************************************************************************\n");
 
-		buffer_position = dg_send( connfd, sendline, strlen( sendline ), sequence_number );
+		buffer_position = dg_send( connfd, sendline, strlen( sendline ) );
 
 		printf("Buffer position : %d\n", buffer_position );
-
-		if( buffer_position == ( max_window_size - 1 )  )
-		{
-			/* Go to recieve the ACK's */
-			printf("Trying to recieve ACK's..\n");
-			dg_recieve_ack( connfd );
-		}	
-		sequence_number++;
 
 		memset( sendline, '\0', sizeof( sendline ) );
 
 	}
+
+*/
 }
