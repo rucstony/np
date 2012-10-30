@@ -4,6 +4,7 @@
 #include	"unprtt.h"
 #include	<setjmp.h>
 #include 	<sys/socket.h>
+#include 	<unpthread.h>
 
 #undef  MAXLINE
 #define MAXLINE 65507
@@ -24,16 +25,27 @@ typedef struct
 	char data[MAXLINE];
 }config;
 
+typedef struct 
+{
+	char data[MAXLINE];
+}recieve_buffer;
+
 static struct msghdr	msgrecv, *tmp;
 
-int 		  		  global_ack_number = 0;
+int 		  		  global_ack_number = 0,n;
 
 static struct msghdr  *rwnd; 
 
 /* Sliding window protocol */
 int 	reciever_window_size;
-int 	nr = 0;
 int 	ns = 0;
+int 	nr = 0;
+
+/* Producer consumer Mutex  */
+pthread_mutex_t	nr_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_t		tid;
+int				val;
+
 
 /* Consumed sequence numbers / datagrams */
 int consumed = -1;	
@@ -288,15 +300,23 @@ void update_ns( int packet_sequence_number )
 
 void update_nr( int packet_sequence_number )
 {
+	/* Locking nr */
+	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
+		errno = n, err_sys("pthread_mutex_lock error");
+	
 	if( recvhdr.seq == nr )
 	{
 		nr = nr + 1;
-		while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
+	//	while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
+		while( ( rwnd1[nr%reciever_window_size].data != NULL ) || nr < ns )
 		{
 			nr++;
 		}
 	}
-		
+
+	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
+		errno = n, err_sys( "pthread_mutex_unlock error" );
+	/* Unlocking nr */
 }
 
 ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
@@ -304,6 +324,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	ssize_t			n;
 	struct iovec	iovrecv[2];
 	char 			IPClient[20];
+	char			output[MAXLINE];
 
 	memset( &msgrecv, '\0', sizeof(msgrecv) ); 
 	memset( &recvhdr, '\0', sizeof(recvhdr) ); 
@@ -324,14 +345,29 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		printf("Error no : %d\n", errno );
 		exit(0);
 	}
-		
-	inbytes = sizeof( inbuff );
+	
+//	memcpy( iovrecv[1].iov_base, inbuff );
+//	inbytes = sizeof( inbuff );
 
 	printf("RECEIVED DATAGRAM : %s\n", iovrecv[1].iov_base );
 	printf("MY DATAGRAM SIZE : %d\n", strlen(iovrecv[1].iov_base) );
 
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
-	rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
+	//rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
+	strcpy( rwnd1[ (recvhdr.seq)%reciever_window_size ].data, inbuff );
+
+//	sprintf( output, "%s\n", rwnd[ (recvhdr.seq)%reciever_window_size ].msg_iov[1].iov_base );
+	sprintf( output, "%s\n", rwnd1[ (recvhdr.seq)%reciever_window_size ].data );
+	//strcpy( output, rwnd[ consumed%reciever_window_size ].msg_iov[1].iov_base );	
+	printf( "Added segment '%d': %s\n", recvhdr.seq, output );	
+
+	if( recvhdr.seq > 0 )
+	{
+//		sprintf( output, "%s\n", rwnd[ (recvhdr.seq-1)%reciever_window_size ].msg_iov[1].iov_base );
+		sprintf( output, "%s\n", rwnd1[ (recvhdr.seq-1)%reciever_window_size ].data );
+		//strcpy( output, rwnd[ consumed%reciever_window_size ].msg_iov[1].iov_base );	
+		printf( "Previous segment '%d': %s\n", recvhdr.seq-1, output );	
+	}	
 
 	update_ns( recvhdr.seq );
 	update_nr( recvhdr.seq );
@@ -349,9 +385,20 @@ ssize_t dg_send_ack( int fd )
 	memset( &msgrecv, '\0', sizeof( msgrecv ) ); 
 	memset( &recvhdr, '\0', sizeof( recvhdr ) ); 
 	
+	
+	/* Locking nr */
+
+	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
+		errno = n, err_sys("pthread_mutex_lock error");
+	
 	recvhdr.ack_no = nr;
 	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed - 1 ) ;
 
+	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
+		errno = n, err_sys( "pthread_mutex_unlock error" );
+
+	/* Unlocking nr */
+	
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
 	msgrecv.msg_iov = iovrecv;
@@ -372,10 +419,55 @@ void status_print()
 	printf("***********************************************************\n");
 	printf("STATUS PRINT\n");
 	printf("***********************************************************\n");
-	printf("Nr / Acknowledgement Number : %d\n",nr );
+//	printf("Nr / Acknowledgement Number : %d\n",nr );
 	printf("Ns  : %d\n",ns );
 	printf("Consumed : %d\n",consumed );
 	printf("***********************************************************\n");
+}
+
+void delete_datasegment( int consumed )
+{
+//	swnd[ na%sender_window_size ] = NULL;
+	printf("Deleting the consumed segment..\n");
+	//tmp = &( rwnd[ consumed%reciever_window_size ] );
+	tmp = &( rwnd1[ consumed%reciever_window_size ].data );
+	memset( tmp, '\0', sizeof( MAXLINE ) ); 
+}
+
+void * recv_consumer( void *ptr )
+{
+	char output[MAXLINE];
+	while(1)
+	{
+	 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
+			errno = n, err_sys("pthread_mutex_lock error");
+		
+		while( consumed != (nr - 1) )
+		{
+			consumed++;
+			//Consume packet 
+			if( rwnd1[ consumed%reciever_window_size ].data != NULL )
+			{
+				sprintf( output, "%s\n", rwnd1[ consumed%reciever_window_size ].data );
+				//strcpy( output, rwnd[ consumed%reciever_window_size ].msg_iov[1].iov_base );	
+				printf( "Deleted segment '%d': %s\n", consumed, output );	
+				delete_datasegment( consumed );
+			}
+			
+		}
+		if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
+			errno = n, err_sys( "pthread_mutex_unlock error" );
+
+
+		sleep(1);
+		//CHECK THIS !!!
+//		sleep_time = -1*mu*ln( srand() );
+//		usleep( sleep_time in millisecs)
+	
+	//CONDITION TO EXIT !!!!!!!!!!!!!
+	}
+
+	return(NULL);
 }
 
 void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] )
@@ -437,6 +529,12 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 	bzero( &ss, sizeof( ss ) );
 	slen = sizeof( ss );
+
+	// Create thread just before the first receive 
+	if ( (n = pthread_create(&tid, NULL, recv_consumer, &val)) != 0)
+		errno = n, err_sys("pthread_create error");
+
+	receive_buffer *rwnd1 = malloc( sizeof( reciever_window_size*sizeof(recieve_buffer) ) );
 
 	memset( recvline, '\0', sizeof( recvline ) );
 
