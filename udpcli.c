@@ -22,12 +22,12 @@ typedef struct
 
 typedef struct 
 {
-	char data[MAXLINE]= "\0";
+	char data[MAXLINE];
 }config;
 
 typedef struct 
 {
-	char data[MAXLINE];
+	char data[MAXLINE]= {'\0'};
 }receive_buffer;
 
 receive_buffer *rwnd1;
