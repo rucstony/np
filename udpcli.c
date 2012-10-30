@@ -310,7 +310,7 @@ void update_nr( int packet_sequence_number )
 	{
 		nr = nr + 1;
 	//	while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
-		while( ( rwnd1[nr%reciever_window_size].data != NULL ) || nr < ns )
+		while( ( rwnd1[nr%reciever_window_size] != NULL ) || nr < ns )
 		{
 			printf("NR++ : %s\n",rwnd1[nr%reciever_window_size].data );
 			nr++;
