@@ -306,7 +306,7 @@ void update_nr( int packet_sequence_number )
 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
 		errno = n, err_sys("pthread_mutex_lock error");
 	
-	if( recvhdr.seq == nr )
+	if( packet_sequence_number == nr )
 	{
 		nr = nr + 1;
 	//	while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
