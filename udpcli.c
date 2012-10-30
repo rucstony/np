@@ -30,6 +30,8 @@ typedef struct
 	char data[MAXLINE];
 }receive_buffer;
 
+receive_buffer *rwnd1;
+
 static struct msghdr	msgrecv, *tmp;
 
 int 		  		  global_ack_number = 0,n;
@@ -534,7 +536,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	if ( (n = pthread_create(&tid, NULL, recv_consumer, &val)) != 0)
 		errno = n, err_sys("pthread_create error");
 
-	receive_buffer *rwnd1 = malloc( sizeof( reciever_window_size*sizeof(receive_buffer) ) );
+	rwnd1 = malloc( sizeof( reciever_window_size*sizeof(receive_buffer) ) );
 
 	memset( recvline, '\0', sizeof( recvline ) );
 
