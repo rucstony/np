@@ -22,7 +22,7 @@ typedef struct
 
 typedef struct 
 {
-	char data[MAXLINE];
+	char data[MAXLINE]= "\0";
 }config;
 
 typedef struct 
@@ -310,7 +310,7 @@ void update_nr( int packet_sequence_number )
 	{
 		nr = nr + 1;
 	//	while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
-		while( ( rwnd1[nr%reciever_window_size] != NULL ) || nr < ns )
+		while( ( rwnd1[nr%reciever_window_size].data != "\0" ) || nr < ns )
 		{
 			printf("NR++ : %s\n",rwnd1[nr%reciever_window_size].data );
 			nr++;
