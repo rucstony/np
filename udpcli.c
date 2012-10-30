@@ -28,7 +28,7 @@ typedef struct
 typedef struct 
 {
 	char data[MAXLINE];
-}recieve_buffer;
+}receive_buffer;
 
 static struct msghdr	msgrecv, *tmp;
 
