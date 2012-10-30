@@ -310,7 +310,7 @@ void update_nr( int packet_sequence_number )
 	{
 		nr = nr + 1;
 	//	while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
-		while( ( strcmp( rwnd1[nr%reciever_window_size].data, "") == 0 ) || nr < ns )
+		while( nr < ns && ( rwnd1[nr%reciever_window_size].data[0] != 0 ) )
 		{
 			printf("NR++ : %s\n",rwnd1[nr%reciever_window_size].data );
 			nr++;
@@ -433,7 +433,7 @@ void delete_datasegment( int consumed )
 //	swnd[ na%sender_window_size ] = NULL;
 	printf("Deleting the consumed segment..\n");
 	//tmp = &( rwnd[ consumed%reciever_window_size ] );
-	strcpy( rwnd1[ consumed%reciever_window_size ].data, "" );
+	rwnd1[ consumed%reciever_window_size ].data[0]='\0' ;
 //	tmp = &( rwnd1[ consumed%reciever_window_size ].data );
 //	memset( tmp, '\0', sizeof( MAXLINE ) ); 
 }
@@ -450,7 +450,7 @@ void * recv_consumer( void *ptr )
 		{
 			consumed++;
 			//Consume packet 
-			if( strcmp( rwnd1[ consumed%reciever_window_size ].data, "" ) == 0 )
+			if( rwnd1[ consumed%reciever_window_size ].data[0] != '\0' )
 			{
 				sprintf( output, "%s\n", rwnd1[ consumed%reciever_window_size ].data );
 				//strcpy( output, rwnd[ consumed%reciever_window_size ].msg_iov[1].iov_base );	
@@ -538,12 +538,13 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	if ( (n = pthread_create(&tid, NULL, recv_consumer, &val)) != 0)
 		errno = n, err_sys("pthread_create error");
 
-	rwnd1 = malloc( sizeof( reciever_window_size*sizeof(receive_buffer) ) );
+	rwnd1 = malloc( reciever_window_size*sizeof(receive_buffer) );
 	int i;
 	for( i=0 ; i<reciever_window_size; i++)
 	{
 		//rwnd1[ i ].data = malloc( sizeof( MAXLINE ) );
-			strcpy( rwnd1[i].data, "" );
+//			strcpy( rwnd1[i].data, "" );
+			rwnd[i].data[0] = '\0';
 	}	
 
 	memset( recvline, '\0', sizeof( recvline ) );
