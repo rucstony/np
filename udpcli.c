@@ -27,7 +27,7 @@ typedef struct
 
 typedef struct 
 {
-	char data[MAXLINE]= {'\0'};
+	char data[MAXLINE];
 }receive_buffer;
 
 receive_buffer *rwnd1;
@@ -538,6 +538,11 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		errno = n, err_sys("pthread_create error");
 
 	rwnd1 = malloc( sizeof( reciever_window_size*sizeof(receive_buffer) ) );
+	int i;
+	for( i=0 ; i<reciever_window_size; i++)
+	{
+		memset( rwnd1[ i ].data, '\0', MAXLINE );
+	}	
 
 	memset( recvline, '\0', sizeof( recvline ) );
 
