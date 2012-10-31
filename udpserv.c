@@ -587,7 +587,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					}
 				}	
 
-				if( dup_ack == 3 )
+				if( dup_ack == 3 && persist_timer_flag == 0 )
 				{
 					/* DUP ACK's case */
 					//dup_ack = 0;
@@ -599,7 +599,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					dg_retransmit( connfd, ack_recieved );	
 				}	
 
-				if( ack_recieved == nt )
+				if( ack_recieved == nt && persist_timer_flag == 0 )
 				{	
 					/* All Acks have been recieved.. */
 					printf("All ACK's have been recieved for buffer..\n");
