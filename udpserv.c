@@ -32,6 +32,14 @@ typedef struct
 
 }socket_info;
 
+typedef struct 
+{
+	uint32_t	ts;
+	char data[MAXLINE];
+}send_buffer;
+
+send_buffer *swnd1;
+
 static struct msghdr  *swnd; 
 
 /* Sliding window data */
@@ -236,11 +244,17 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 	iovsend[1].iov_len = outbytes;
 
 	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%sender_window_size );
-	swnd[ (sendhdr.seq)%sender_window_size ] = msgsend;
+//	swnd[ (sendhdr.seq)%sender_window_size ] = msgsend;
+
+	strcpy( swnd1[ (sendhdr.seq)%sender_window_size ].data, outbuff );
+	swnd1[ (sendhdr.seq)%sender_window_size ].ts = sendhdr.ts;
 
 	printf( "Calling sendmsg() function now..\n" );	
 	int n1;
+
+	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
+	alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
 	
 	if( n1 > 0 )
 	{	
@@ -303,8 +317,11 @@ void delete_datasegment( int na )
 {
 //	swnd[ na%sender_window_size ] = NULL;
 	printf("Deleting the ACK'ed segment after updating na..\n");
-	tmp = &( swnd[ na%sender_window_size ] );
-	memset( tmp, '\0', sizeof( struct msghdr ) ); 
+//	tmp = &( swnd[ na%sender_window_size ] );
+//	memset( tmp, '\0', sizeof( struct msghdr ) ); 
+
+	swnd1[ na%sender_window_size ].data[0]='\0' ;
+
 }
 
 /* acknowledgement number = seq# of highest acknowledged packet + 1 */
@@ -346,7 +363,6 @@ int dg_recieve_ack( int fd )
 		exit(0);
 	}
 	
-
 //	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
 //	rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
 
@@ -400,10 +416,31 @@ void status_report()
 int dg_retransmit( int fd, int ack_recieved )
 {
 //	memset( tmp, '\0', sizeof( struct msghdr ) ); 
-	tmp = &( swnd[ ack_recieved%sender_window_size ] );
 	
+	ssize_t			n;
+	struct iovec	iovsend[2], iovrecv[2];
+	char 			outbuff[MAXLINE];
+
+	memset( &msgsend, '\0', sizeof( msgsend ) ); 
+	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
+
+	strcpy( outbuff, swnd1[ ack_recieved%sender_window_size ] );
+
+	sendhdr.seq = ack_recieved;
+	msgsend.msg_name = NULL;
+	msgsend.msg_namelen = 0;
+	msgsend.msg_iov = iovsend;
+	msgsend.msg_iovlen = 2;
+	iovsend[0].iov_base = &sendhdr;
+	iovsend[0].iov_len = sizeof(struct hdr);
+	iovsend[1].iov_base = (void *)outbuff;
+	iovsend[1].iov_len = sizeof(outbuff);
+
 	int n1;
-	n1 = sendmsg( fd, tmp, 0 );
+	sendhdr.ts = rtt_ts(&rttinfo);
+	n1 = sendmsg( fd, &msgsend, 0 );
+	alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
+
 	
 	if( n1 > 0 )
 	{	
@@ -497,6 +534,13 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	printf( "Picking data from the file..\n" );
 	ifp = fopen( filename, 	"r" );
 
+	swnd1 = malloc( sender_window_size*sizeof(send_buffer) );
+	int i;
+	for( i = 0 ; i<sender_window_size; i++)
+	{
+			swnd1[i].data[0] = '\0';
+	}	
+
 	int buffer_position, send_counter = 0;
 
 	memset( sendline, '\0', sizeof( sendline ) );
@@ -520,6 +564,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			while(1)
 			{	
 				ack_recieved = dg_recieve_ack( connfd );
+
 				if( dup_ack == 3 )
 				{
 					/* DUP ACK's case */
@@ -536,6 +581,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				{	
 					/* All Acks have been recieved.. */
 					printf("All ACK's have been recieved for buffer..\n");
+					alarm(0);
+					rtt_stop(&rttinfo, rtt_ts(&rttinfo) - swnd1[ (ack_recieved-1)%sender_window_size ].ts);
+					
 					send_counter = 0;
 					break;
 				}	
@@ -562,10 +610,32 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			printf("Calling dg_send() with picked up data : %s of size %d\n", sendline, strlen(sendline) );
 			printf("***************************************************************************************\n");
 
-		//	signal(SIGALRM, sig_alrm);
-		//	rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
+			printf("Starting RTT timer..\n");
+			if( rttinit == 0 ) 
+			{
+				rtt_init( &rttinfo );		/* first time we're called */
+				rttinit = 1;
+				rtt_d_flag = 1;
+			}
 
+
+			signal(SIGALRM, sig_alrm);
+			rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
+	
 			buffer_position = dg_send( connfd, sendline, strlen( sendline ) );
+			
+			if ( sigsetjmp( jmpbuf, 1 ) != 0 ) 
+			{
+				if ( rtt_timeout( &rttinfo ) < 0 ) 
+				{
+					err_msg( "dg_send_recv: no response from server, giving up" );
+					rttinit = 0;	/* reinit in case we're called again */
+					errno = ETIMEDOUT;
+					return(-1);
+				}
+				goto sendagain;
+			}
+
 			send_counter++;
 			printf("After dg_send\n");
 			status_report();
@@ -597,6 +667,12 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		}	
 		continue;
 		sendagain : 
+					while( na != nt )
+					{
+						printf("TIMEOUT EXPERIENCED..\n");	
+						printf("Retransmitting the packet %d.. )\n", na);
+						dg_retransmit( connfd, na );
+					}
 					ssthresh = MIN( cwnd, recv_advertisement );
 					ssthresh = ( MIN( ssthresh, 2 ) )/2;
 					cwnd = 1;

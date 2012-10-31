@@ -19,7 +19,7 @@ prifinfo_plus.o: prifinfo_plus.c
 	${CC} ${CFLAGS} -c prifinfo_plus.c
 
 udpcli:	udpcli.o get_ifi_info_plus.o
-	${CC} ${CFLAGS} -o $@ get_ifi_info_plus.o udpcli.o ${LIBS}
+	${CC} ${CFLAGS} -o $@ get_ifi_info_plus.o udpcli.o ${LIBS} -lm
 
 udpserv:	udpserv.o get_ifi_info_plus.o 
 		${CC} ${CFLAGS} -o $@  get_ifi_info_plus.o udpserv.o ${LIBS}
