@@ -444,7 +444,8 @@ void delete_datasegment( int consumed )
 
 void * recv_consumer( void *ptr )
 {
-	char output[MAXLINE], double sleep_time;
+	char output[MAXLINE]; 
+	double sleep_time;
 		
 	while(1)
 	{
