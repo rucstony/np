@@ -5,6 +5,7 @@
 #include	<setjmp.h>
 #include 	<sys/socket.h>
 #include 	<unpthread.h>
+#include 	<math.h>
 
 #undef  MAXLINE
 #define MAXLINE 65507
@@ -51,6 +52,9 @@ int				val;
 
 /* Consumed sequence numbers / datagrams */
 int consumed = -1;	
+
+double mu;
+
 
 static struct hdr 
 {
@@ -440,7 +444,8 @@ void delete_datasegment( int consumed )
 
 void * recv_consumer( void *ptr )
 {
-	char output[MAXLINE];
+	char output[MAXLINE], double sleep_time;
+		
 	while(1)
 	{
 	 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
@@ -463,10 +468,9 @@ void * recv_consumer( void *ptr )
 			errno = n, err_sys( "pthread_mutex_unlock error" );
 
 
-		sleep(1);
-		//CHECK THIS !!!
-//		sleep_time = -1*mu*ln( srand() );
-//		usleep( sleep_time in millisecs)
+		//srand() !!!
+		sleep_time = -1*mu*log( ( rand() % 100 ) / 100.0 );
+		usleep( sleep_time*1000 );
 	
 	//CONDITION TO EXIT !!!!!!!!!!!!!
 	}
@@ -476,14 +480,18 @@ void * recv_consumer( void *ptr )
 
 void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, config configdata[] )
 {
-	int 					size;
+	int 					size, seed_value;
 	char 					sendline[MAXLINE], recvline[MAXLINE + 1];
 	ssize_t					n;
 	size_t 					inbytes;
 	socklen_t 				slen;
 	struct sockaddr_in      ss;
 	char 					IPServer[20];	
+	
+	seed_value =  (int) atoi( configdata[4].data );
+	mu = (double) atof( configdata[6].data );
 
+	srand( seed_value );
 
 	if( connect( sockfd, pservaddr, servlen ) < 0 )
 	{
@@ -544,7 +552,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	{
 		//rwnd1[ i ].data = malloc( sizeof( MAXLINE ) );
 //			strcpy( rwnd1[i].data, "" );
-			rwnd[i].data[0] = '\0';
+			rwnd1[i].data[0] = '\0';
 	}	
 
 	memset( recvline, '\0', sizeof( recvline ) );
