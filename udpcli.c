@@ -353,34 +353,26 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		printf("Error no : %d\n", errno );
 		exit(0);
 	}
-	
-//	memcpy( iovrecv[1].iov_base, inbuff );
-//	inbytes = sizeof( inbuff );
 
-	printf("RECEIVED DATAGRAM : %s\n", iovrecv[1].iov_base );
-	printf("MY DATAGRAM SIZE : %d\n", strlen(iovrecv[1].iov_base) );
+	if( recvhdr.seq != -1 )
+	{	
+		printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
+		strcpy( rwnd1[ (recvhdr.seq)%reciever_window_size ].data, inbuff );
 
-	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
-	//rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
-	strcpy( rwnd1[ (recvhdr.seq)%reciever_window_size ].data, inbuff );
-//	rwnd1[ (recvhdr.seq)%reciever_window_size ].ts = recvhdr.ts;
+		sprintf( output, "%s\n", rwnd1[ (recvhdr.seq)%reciever_window_size ].data );
+		printf( "Added segment '%d': %s\n", recvhdr.seq, output );	
 
-//	sprintf( output, "%s\n", rwnd[ (recvhdr.seq)%reciever_window_size ].msg_iov[1].iov_base );
-	sprintf( output, "%s\n", rwnd1[ (recvhdr.seq)%reciever_window_size ].data );
-	//strcpy( output, rwnd[ consumed%reciever_window_size ].msg_iov[1].iov_base );	
-	printf( "Added segment '%d': %s\n", recvhdr.seq, output );	
+		if( recvhdr.seq > 0 )
+		{
+	//		sprintf( output, "%s\n", rwnd[ (recvhdr.seq-1)%reciever_window_size ].msg_iov[1].iov_base );
+			sprintf( output, "%s\n", rwnd1[ (recvhdr.seq-1)%reciever_window_size ].data );
+			//strcpy( output, rwnd[ consumed%reciever_window_size ].msg_iov[1].iov_base );	
+			printf( "Previous segment '%d': %s\n", recvhdr.seq-1, output );	
+		}	
 
-	if( recvhdr.seq > 0 )
-	{
-//		sprintf( output, "%s\n", rwnd[ (recvhdr.seq-1)%reciever_window_size ].msg_iov[1].iov_base );
-		sprintf( output, "%s\n", rwnd1[ (recvhdr.seq-1)%reciever_window_size ].data );
-		//strcpy( output, rwnd[ consumed%reciever_window_size ].msg_iov[1].iov_base );	
-		printf( "Previous segment '%d': %s\n", recvhdr.seq-1, output );	
-	}	
-
-	update_ns( recvhdr.seq );
-	update_nr( recvhdr.seq );
-
+		update_ns( recvhdr.seq );
+		update_nr( recvhdr.seq );
+	}
 	return (1);
 //	return ( n- sizeof(struct hdr) );
 }

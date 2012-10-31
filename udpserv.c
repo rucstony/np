@@ -424,7 +424,8 @@ int dg_retransmit( int fd, int ack_recieved )
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 
-	strcpy( outbuff, swnd1[ ack_recieved%sender_window_size ].data );
+	if( ack_recieved != -1 )
+		strcpy( outbuff, swnd1[ ack_recieved%sender_window_size ].data );
 
 	sendhdr.seq = ack_recieved;
 	msgsend.msg_name = NULL;
@@ -455,7 +456,7 @@ int dg_retransmit( int fd, int ack_recieved )
 		
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename )
 {
-	int						n;
+	int						n, persist_timer_flag=0;
 	char					mesg[MAXLINE];
 	socklen_t				len, slen, slen1;
 	int 					connfd;
@@ -565,6 +566,17 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			{	
 				ack_recieved = dg_recieve_ack( connfd );
 
+
+				if( persist_timer_flag == 1 )
+				{
+					if( recv_advertisement > 0) 
+					{
+						persist_timer_flag = 0;
+						alarm(0);
+						break;	
+					}
+				}	
+
 				if( dup_ack == 3 )
 				{
 					/* DUP ACK's case */
@@ -587,9 +599,18 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					send_counter = 0;
 					break;
 				}	
+
+				if( recv_advertisement == 0 )
+				{
+					persist_timer_flag = 1;
+					signal(SIGALRM, sig_alrm);
+					rtt_newpack( &rttinfo );	
+					dg_retransmit( connfd, -1 );					
+				} 
 				//printf("After j==0 dg_recieve_ack\n");
 				//status_report();
 			}
+
 			if(  slowstart )
 			{
 				cwnd *= 2;
@@ -626,7 +647,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			
 			if ( sigsetjmp( jmpbuf, 1 ) != 0 ) 
 			{
-				if ( rtt_timeout( &rttinfo ) < 0 ) 
+				if ( rtt_timeout( &rttinfo ) < 0 && persist_timer_flag == 0 ) 
 				{
 					err_msg( "dg_send_recv: no response from server, giving up" );
 					rttinit = 0;	/* reinit in case we're called again */
@@ -667,12 +688,16 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		}	
 		continue;
 		sendagain : 
-					while( na != nt )
+					while( na != nt && recv_advertisement != 0 )
 					{
 						printf("TIMEOUT EXPERIENCED..\n");	
 						printf("Retransmitting the packet %d.. )\n", na);
 						dg_retransmit( connfd, na );
 					}
+					if( recv_advertisement == 0 )
+					{
+						dg_retransmit( connfd, -1 );
+					}	
 					ssthresh = MIN( cwnd, recv_advertisement );
 					ssthresh = ( MIN( ssthresh, 2 ) )/2;
 					cwnd = 1;
