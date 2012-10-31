@@ -471,7 +471,8 @@ void * recv_consumer( void *ptr )
 
 		//srand() !!!
 		sleep_time = ( rand() % 100 ) / 100.0;
-		sleep_time = -1*mu*log( sleep_time );
+		sleep_time = log( sleep_time );	
+		sleep_time = -1*mu*sleep_time ;
 		usleep( sleep_time*1000 );
 	
 	//CONDITION TO EXIT !!!!!!!!!!!!!
