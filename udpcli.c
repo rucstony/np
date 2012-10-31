@@ -363,7 +363,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
 	//rwnd[ (recvhdr.seq)%reciever_window_size ] = msgrecv;
 	strcpy( rwnd1[ (recvhdr.seq)%reciever_window_size ].data, inbuff );
-	rwnd1[ (recvhdr.seq)%reciever_window_size ].ts = recvhdr.ts;
+//	rwnd1[ (recvhdr.seq)%reciever_window_size ].ts = recvhdr.ts;
 
 //	sprintf( output, "%s\n", rwnd[ (recvhdr.seq)%reciever_window_size ].msg_iov[1].iov_base );
 	sprintf( output, "%s\n", rwnd1[ (recvhdr.seq)%reciever_window_size ].data );
@@ -408,7 +408,7 @@ ssize_t dg_send_ack( int fd )
 
 	/* Unlocking nr */
 
-	recvhdr.ts = rwnd1[ nr - 1 ].ts;
+//	recvhdr.ts = rwnd1[ nr - 1 ].ts;
 		
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
