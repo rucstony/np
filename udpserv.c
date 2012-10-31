@@ -564,6 +564,16 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		{
 			while(1)
 			{	
+		
+				if( recv_advertisement == 0 )
+				{
+					persist_timer_flag = 1;
+					signal(SIGALRM, sig_alrm);
+					rtt_newpack( &rttinfo );
+					printf("Entering Persist timer retransmit..\n");	
+					dg_retransmit( connfd, -1 );					
+				} 
+
 				ack_recieved = dg_recieve_ack( connfd );
 
 
@@ -599,14 +609,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					send_counter = 0;
 					break;
 				}	
-
-				if( recv_advertisement == 0 )
-				{
-					persist_timer_flag = 1;
-					signal(SIGALRM, sig_alrm);
-					rtt_newpack( &rttinfo );	
-					dg_retransmit( connfd, -1 );					
-				} 
 				//printf("After j==0 dg_recieve_ack\n");
 				//status_report();
 			}
