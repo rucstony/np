@@ -424,7 +424,7 @@ int dg_retransmit( int fd, int ack_recieved )
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 
-	strcpy( outbuff, swnd1[ ack_recieved%sender_window_size ] );
+	strcpy( outbuff, swnd1[ ack_recieved%sender_window_size ].data );
 
 	sendhdr.seq = ack_recieved;
 	msgsend.msg_name = NULL;
