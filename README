@@ -39,4 +39,16 @@
        modification in code so as to print out network mask)
 
 
+-----------------------------------------------------------------------------------
+Simulating transmission loss : 
+Whenever a datagram arrives or an ACK is recieved, we call rand() (initialized with a seed value provided in client.in) to generate a random number between 0 and 1 and drop the packet if value is less than p value provided in client.in. 
+
+srand( seed value ); 
+
+value = rand()%100 / 100.0
+
+if( value < p )
+{
+  drop_packet();
+}
 

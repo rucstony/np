@@ -9,7 +9,7 @@
 
 #undef  MAXLINE
 #define MAXLINE 65507
-#define PACKET_SIZE 512
+#define PACKET_SIZE 496
 
 typedef char* string; 
 
@@ -54,7 +54,11 @@ int				val;
 /* Consumed sequence numbers / datagrams */
 int consumed = -1;	
 
+/* Client.in parameters */
 double mu;
+
+/* Packet Drop  */
+int packet_drop = 0;
 
 
 static struct hdr 
@@ -98,16 +102,6 @@ int main( int argc, char **argv )
 		exit(1);
 	}
 	
-	/*
-	for(j=0; j<7;j++)
-	{
-	configdata[j].data="NA";
-	printf("loop: %s\n",configdata[j].data);
-
-	}
-	dataline=malloc(MAXLINE);
-	*/
-
 	while ( fgets( dataline,MAXLINE,ifp ) != NULL )
 	{
 		n = strlen( dataline );
@@ -120,10 +114,6 @@ int main( int argc, char **argv )
         }	
 		dataline[n] = 0;
 		countline++;	
-		/*
-		free(dataline);
-		dataline=malloc(MAXLINE);	
-		*/
 	}	
 	fclose( ifp );
 	
@@ -144,17 +134,6 @@ int main( int argc, char **argv )
  		  ifi != NULL;
  		  ifi = ifi->ifi_next) 
 	{
-		/*
-        sockfd[sockcount]=-1;
-
-        if((    sockfd[sockcount]= socket(AF_INET, SOCK_DGRAM, 0))==NULL)
-        {
-			printf("socket error\n");
-			exit(1);
-        }
-		setsockopt( sockfd[ sockcount ], SOL_SOCKET, SO_REUSEADDR, &on, sizeof( on ) );
-		*/
-
 		sa = ( struct sockaddr_in * ) ifi->ifi_addr;
 		sa->sin_family = AF_INET;
 		sa->sin_port = htonl( ( size_t )configdata[1].data );
@@ -163,9 +142,7 @@ int main( int argc, char **argv )
 		sockinfo[sockcount].sockfd=-1;
 		sockinfo[sockcount].ip_addr=sa;
 		sockinfo[sockcount].ntmaddr=(struct sockaddr_in *)ifi->ifi_ntmaddr;
-		/* 
-		sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
-		*/
+
 		strcpy( temp, sock_ntop_host( (SA *)sockinfo[ sockcount ].ntmaddr, sizeof( *sockinfo[ sockcount ].ntmaddr ) ) );
 		printf( "IP Address : %s, Network Mask : %s\n", 
 				sock_ntop_host( (SA *)sockinfo[ sockcount ].ip_addr, sizeof( *sockinfo[ sockcount ].ip_addr ) ),
@@ -330,6 +307,21 @@ void update_nr( int packet_sequence_number )
 	/* Unlocking nr */
 }
 
+void check_for_packet_drop( double datagram_loss_probability )
+{
+	double value;
+	value = rand()%100 / 100.0;
+	if( value < datagram_loss_probability )
+	{
+		packet_drop = 1;
+	}
+	else
+	{
+		packet_drop = 0;
+	}		
+	return;
+}
+
 ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 {
 	ssize_t			n;
@@ -357,7 +349,11 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		exit(0);
 	}
 
-	if( recvhdr.seq != -1 )
+	if( packet_drop == 1 )
+	{
+		printf("Dropping recieved packet, SEQUENCE NUMBER : %d..\n", recvhdr.seq );
+	}	
+	else if( recvhdr.seq != -1 )
 	{
 		printf("Recieved Packet with packet_sequence_number : %d from server..\n", recvhdr.seq );	
 		printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
@@ -370,7 +366,8 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	{
 		printf("Recieved a probing packet from server..\n");
 	}	
-	return (n);
+	return (1);
+
 //	return ( n- sizeof(struct hdr) );
 }
 
@@ -406,9 +403,16 @@ ssize_t dg_send_ack( int fd )
 	iovrecv[0].iov_base = &recvhdr;
 	iovrecv[0].iov_len = sizeof( struct hdr );
 
-	if( n = sendmsg( fd, &msgrecv, 0) < 0 ) 
+	if( packet_drop == 0 )
+	{	
+		if( n = sendmsg( fd, &msgrecv, 0) < 0 ) 
+		{
+			printf("Error in SendMsg!!\n");
+		}	
+	}	
+	else
 	{
-		printf("Error in SendMsg!!\n");
+		printf("Dropping ACK packet : ACK-%d..\n", recvhdr.ack_no );
 	}	
 
 	return ( n );
@@ -477,9 +481,11 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	socklen_t 				slen;
 	struct sockaddr_in      ss;
 	char 					IPServer[20];	
-	
+	double 					datagram_loss_probability;
+
 	seed_value =  (int) atoi( configdata[4].data );
 	mu = (double) atof( configdata[6].data );
+	datagram_loss_probability = (double) atof( configdata[5].data );
 
 	srand( seed_value );
 
@@ -543,6 +549,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 			rwnd1[i].data[0] = '\0';
 	}	
 
+	check_for_packet_drop( datagram_loss_probability );	
 	memset( recvline, '\0', sizeof( recvline ) );
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
@@ -554,9 +561,14 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 		printf("Attempting to send an ACK..\n");
 		status_print();
+		
+		check_for_packet_drop( datagram_loss_probability );
 		dg_send_ack( sockfd );
+		
 		status_print();
 
 		memset( recvline, '\0', sizeof( recvline ) );
+		
+		check_for_packet_drop( datagram_loss_probability );
 	}	
 }

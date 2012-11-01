@@ -591,7 +591,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					slowstart = 0;
 				}		
 			}
-			else
+			
+//			else
+			if( slowstart == 0 )
 			{
 				cwnd += 1;
 			}
