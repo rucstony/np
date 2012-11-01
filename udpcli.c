@@ -554,21 +554,23 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
-		printf("************************************************\n");
-		printf( "Recieved message of %d bytes..\n", n );	
-		printf( "RECIEVED MESSAGE : %s\n",recvline );	
-		printf("************************************************\n");
+		if( packet_drop == 0 )
+		{
+			printf("************************************************\n");
+			printf( "Recieved message of %d bytes..\n", n );	
+			printf( "RECIEVED MESSAGE : %s\n",recvline );	
+			printf("************************************************\n");
 
-		printf("Attempting to send an ACK..\n");
-		status_print();
-		
-		check_for_packet_drop( datagram_loss_probability );
-		dg_send_ack( sockfd );
-		
-		status_print();
+			printf("Attempting to send an ACK..\n");
+			status_print();
+			
+			check_for_packet_drop( datagram_loss_probability );
+			dg_send_ack( sockfd );
+			
+			status_print();
+		}	
 
 		memset( recvline, '\0', sizeof( recvline ) );
-		
 		check_for_packet_drop( datagram_loss_probability );
 	}	
 }
