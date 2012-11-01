@@ -311,6 +311,7 @@ void check_for_packet_drop( double datagram_loss_probability )
 {
 	double value;
 	value = rand()%100 / 100.0;
+	printf("PROBABILITY VALUE IS : %d\n", value );	
 	if( value < datagram_loss_probability )
 	{
 		packet_drop = 1;
