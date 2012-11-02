@@ -510,7 +510,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			swnd1[i].data[0] = '\0';
 	}	
 
-	int buffer_position, send_counter = 0;
+	int buffer_position, send_counter = 0, t;
 
 	memset( sendline, '\0', sizeof( sendline ) );
 
@@ -668,13 +668,15 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					}	
 					else
 					{
-						while( na != nt )
+						t = na;
+						while( t != nt )
 						{
 							printf("******************RTT TIMEOUT EXPERIENCED******************..\n");	
-							printf("NA : %d\nNt :%d\n", na, nt );
-							printf("Retransmitting the packet %d.. )\n", na);
-							dg_retransmit( connfd, na );
+							printf("Retransmitting the packet %d.. )\n", t);
+							dg_retransmit( connfd, t );
+							t++;
 						}
+
 					}	
 					ssthresh = MIN( cwnd, recv_advertisement );
 					ssthresh = ( MIN( ssthresh, 2 ) )/2;
