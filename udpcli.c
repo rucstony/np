@@ -359,7 +359,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		printf("Recieved a probing packet from server..\n");
 	}	
 	else if( (recvhdr.seq >= nr) 
-			&& (recvhdr.seq < (nr + recv_window_advertisement) ) )
+			&& (recvhdr.seq < (nr + reciever_window_size ) ) )
 	{
 		printf("Recieved Packet with packet_sequence_number : %d from server..\n", recvhdr.seq );	
 		printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
