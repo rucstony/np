@@ -4,6 +4,7 @@
 #include 		<sys/socket.h>
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define INT_MAX  +32767
 #define PACKET_SIZE 496
 
@@ -523,7 +524,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			sender_usable_window = cwnd - ( nt - na ) ;	
 		else
 			sender_usable_window = 0 ;
-		
+
 		printf("Sender usable window : %d\n recv_advertisement : %d\n",sender_usable_window, recv_advertisement );
 		
 		/* Check for if recv_adv == 0 i.e. no more packets to be sent. */
@@ -562,7 +563,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					/* DUP ACK's case */
 					//dup_ack = 0;
 					ssthresh = MIN( cwnd, recv_advertisement );
-					ssthresh = ( MIN( ssthresh, 2 ) )/2;
+					ssthresh = ( MAX( ssthresh, 2 ) )/2;
 					printf("****************** 3 DUPLICATE ACK'S REC'VED ******************\n");
 					printf("Retransmitting the packet %d.. \n", ack_recieved);
 					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
@@ -651,7 +652,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				{
 					/* DUP ACK's case */
 					ssthresh = MIN( cwnd, recv_advertisement );
-					ssthresh = ( MIN( ssthresh, 2 ) )/2;
+					ssthresh = ( MAX( ssthresh, 2 ) )/2;
 					printf("****************** 3 DUPLICATE ACK'S REC'VED ******************\n");
 					printf("Retransmitting the packet %d.. \n", ack_recieved);
 					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
@@ -682,7 +683,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 					}	
 					ssthresh = MIN( cwnd, recv_advertisement );
-					ssthresh = ( MIN( ssthresh, 2 ) )/2;
+					ssthresh = ( MAX( ssthresh, 2 ) )/2;
 					cwnd = 1;
 					slowstart = 1;
 					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
