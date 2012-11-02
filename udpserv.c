@@ -668,7 +668,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					}	
 					else
 					{
-						while( na != nt && recv_advertisement != 0 )
+						while( na != nt )
 						{
 							printf("******************RTT TIMEOUT EXPERIENCED******************..\n");	
 							printf("Retransmitting the packet %d.. )\n", na);
