@@ -22,7 +22,9 @@ client:	udpcli.o get_ifi_info_plus.o
 	${CC} ${CFLAGS} -o $@ get_ifi_info_plus.o udpcli.o ${LIBS} -lm
 
 server:	udpserv.o get_ifi_info_plus.o 
-		${CC} ${CFLAGS} -o $@  get_ifi_info_plus.o udpserv.o ${LIBS}
+		${CC} ${CFLAGS} -o $@  get_ifi_info_plus.o udpserv.o rtt.o ${LIBS}
 
+rtt.o:	${CC} ${CFLAGS} -c rtt.c ${LIBS}
+		
 clean:
 		rm -f prifinfo_plus prifinfo_plus.o get_ifi_info_plus.o udpcli.o udpserv.o udpcli udpserv ${PROGS} ${CLEANFILES}
