@@ -519,8 +519,11 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	recv_advertisement = INT_MAX;
 	while(1)
 	{	
-		sender_usable_window = cwnd - ( nt - na ) ;	
-
+		if( cwnd > ( nt - na ) )
+			sender_usable_window = cwnd - ( nt - na ) ;	
+		else
+			sender_usable_window = 0 ;
+		
 		printf("Sender usable window : %d\n recv_advertisement : %d\n",sender_usable_window, recv_advertisement );
 		
 		/* Check for if recv_adv == 0 i.e. no more packets to be sent. */
