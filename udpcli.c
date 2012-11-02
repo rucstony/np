@@ -354,7 +354,12 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	{
 		printf("Dropping recieved packet, SEQUENCE NUMBER : %d..\n", recvhdr.seq );
 	}	
-	else if( recvhdr.seq != -1 )
+	else if( recvhdr.seq == -1 )
+	{
+		printf("Recieved a probing packet from server..\n");
+	}	
+	else if( (recvhdr.seq >= nr) 
+			&& (recvhdr.seq < (nr + recv_window_advertisement) ) )
 	{
 		printf("Recieved Packet with packet_sequence_number : %d from server..\n", recvhdr.seq );	
 		printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
@@ -365,8 +370,9 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	}
 	else
 	{
-		printf("Recieved a probing packet from server..\n");
+		printf("Recieved Packet sequence # out of range : seq# :%d..\n", recvhdr.seq );
 	}	
+
 	return (1);
 
 //	return ( n- sizeof(struct hdr) );
