@@ -490,8 +490,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	FILE 					*ifp;
 	ssize_t					bytes;
 	char					sendline[MAXLINE], recvline[MAXLINE + 1];
-	const int						on1=0;
-
+	const int				on;
+	int 					onlength;
 
 	printf( "\n******************* CHILD SERVER INITIATED *********************\n" );
 
@@ -503,9 +503,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	}
 	
 //	setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );  
-	printf("Setting SO_DONTROUTE to %d..\n", getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on1, sizeof( on1 ) ) );
+	printf("Setting SO_DONTROUTE to %d..\n", getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, &onlength ) );
 	perror( "getsockopt" );
-	setsockopt( connfd, SOL_SOCKET, SO_DONTROUTE, &on1, sizeof( on1 ) );
+	setsockopt( connfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );
 
 	/* Bind to IPServer and EPHEMERAL PORT and return EPHEMERAL PORT */
 
