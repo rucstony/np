@@ -75,6 +75,7 @@ int main(int argc, char **argv)
 	char 				*mode = "r";
 	socket_info 		sockinfo[10];
 	FILE 				*ifp;
+	int 				is_local = 0;
 
 	ifp = fopen( "server.in", mode );
 	if ( ifp == NULL ) 
@@ -200,11 +201,55 @@ int main(int argc, char **argv)
 					exit(1);
 				}      
 				
-				printf("CONNECTION RECEIVED ON :\n ");	
+				printf("\nCONNECTION RECEIVED ON :\n ");	
 				printf("BOUND SOCKET ADDRESS : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
 				printf( "SERVER PORT: %d\n", ss.sin_port );
 			//	printf( "sockfd----- %d\n", sockinfo[ i ].sockfd );
-		
+
+				printf("\nChecking if Server is LOCAL to client..\n");
+
+				if( strcmp( IPServer, "127.0.0.1\n" ) == 0 )
+				{
+					printf("STATUS : SAME HOST\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
+					is_local = 1;
+				}	
+				else
+				{	
+					struct in_addr ip, netmask, subnet, clientip, default_ip;
+					struct in_addr longest_prefix_ip, longest_prefix_netmask;
+					char network1[MAXLINE], network2[MAXLINE], ip1[MAXLINE], nm1[MAXLINE];
+
+					struct sockaddr_in *sd = (struct sockaddr_in *)(sockinfo[ i ].ip_addr);
+					struct sockaddr_in *se = (struct sockaddr_in *)(sockinfo[ i ].ntmaddr);
+
+					ip = sd->sin_addr;
+					netmask = se->sin_addr;
+
+			 	   	subnet.s_addr = ip.s_addr & netmask.s_addr;
+
+			    	inet_ntop( AF_INET, &subnet, network1, MAXLINE );
+			    	inet_ntop( AF_INET, &ip, ip1, MAXLINE );
+			   		inet_ntop( AF_INET, &netmask, nm1, MAXLINE );
+
+
+			    	inet_pton( AF_INET, IPClient, &clientip );
+			    	subnet.s_addr = clientip.s_addr & netmask.s_addr;
+					    	
+					inet_ntop( AF_INET, &subnet, network2, MAXLINE );
+
+					if( strcmp( network1, network2 ) == 0 )
+					{
+						/* LOCAL  */
+						printf("STATUS : LOCAL\nCLIENT ADDRESS (IPClient) : %s\nSERVER ADDRESS (IPServer) : %s\n", IPClient, IPServer );
+						is_local = 1;	
+					}
+					else
+					{
+						printf("STATUS : NOT LOCAL\nCLIENT ADDRESS : %s\nSERVER ADDRESS : %s\n", IPClient, IPServer );
+						is_local = 0;
+					}	
+				}	
+
 				/* Filling up the child server address structure. */
 				childservaddr.sin_family = AF_INET;
        				childservaddr.sin_port = htonl( 0 );
@@ -215,6 +260,10 @@ int main(int argc, char **argv)
 				//sendto( sockinfo[ i ].sockfd, mesg, sizeof( mesg ), 0, (SA *) &cliaddr, len);
 				if ( ( pid = fork() ) == 0 ) 
 				{             /* child */
+					if( is_local == 1 )
+					{
+						setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );  
+					}	
 					mydg_echo( sockinfo[ i ].sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr), mesg );
 					exit(0);                /* never executed */
 				}
@@ -440,6 +489,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	FILE 					*ifp;
 	ssize_t					bytes;
 	char					sendline[MAXLINE], recvline[MAXLINE + 1];
+	const int				on;
+
 
 	printf( "\n******************* CHILD SERVER INITIATED *********************\n" );
 
@@ -449,7 +500,13 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		printf( "socket error\n" );
 		exit(1);
 	}
+	
+//	setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );  
 
+	getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );
+	setsockopt( connfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );
+
+	printf("Setting SO_DONTROUTE to %d..\n", on );
 	/* Bind to IPServer and EPHEMERAL PORT and return EPHEMERAL PORT */
 
 	bind( connfd, (SA *) servaddr, sizeof( struct sockaddr_in ) );
