@@ -489,7 +489,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	FILE 					*ifp;
 	ssize_t					bytes;
 	char					sendline[MAXLINE], recvline[MAXLINE + 1];
-	const int				on;
+	int						on;
 
 
 	printf( "\n******************* CHILD SERVER INITIATED *********************\n" );
