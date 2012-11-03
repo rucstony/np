@@ -507,6 +507,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	setsockopt( connfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );
 
 	printf("Setting SO_DONTROUTE to %d..\n", getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) ) );
+	printf("Error no : %d\n", errno );
 	/* Bind to IPServer and EPHEMERAL PORT and return EPHEMERAL PORT */
 
 	bind( connfd, (SA *) servaddr, sizeof( struct sockaddr_in ) );
