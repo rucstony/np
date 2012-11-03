@@ -262,8 +262,9 @@ int main(int argc, char **argv)
 				{             /* child */
 					if( is_local == 1 )
 					{
-						setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );  
-					}	
+						printf("Setting socket to %d", setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) ) );  
+						perror( "setsockopt" );
+					}	 
 					mydg_echo( sockinfo[ i ].sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr), mesg );
 					exit(0);                /* never executed */
 				}
