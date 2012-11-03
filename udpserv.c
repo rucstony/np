@@ -494,6 +494,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	int 					onlength;
 
 	onlength = sizeof( on );
+
 	printf( "\n******************* CHILD SERVER INITIATED *********************\n" );
 
 	//printf( "Creating Datagram...\n" );
@@ -503,11 +504,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		exit(1);
 	}
 	
-//	setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );  
-	printf("Setting SO_DONTROUTE to %d..\n", getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, &onlength ) );
-	perror( "getsockopt" );
+	getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, &onlength ) ;
 	setsockopt( connfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );
-
+	printf("Setting connection socket to SO_DONTROUTE = %d\n", on );
 	/* Bind to IPServer and EPHEMERAL PORT and return EPHEMERAL PORT */
 
 	bind( connfd, (SA *) servaddr, sizeof( struct sockaddr_in ) );
