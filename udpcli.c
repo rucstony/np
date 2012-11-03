@@ -101,6 +101,9 @@ int main( int argc, char **argv )
 		fprintf( stderr, "Can't open input file client.in!\n" );
 		exit(1);
 	}
+	printf("***************************************************\n");
+        printf("         DATA FROM CLIENT.IN\n");
+        printf("***************************************************\n");
 	
 	while ( fgets( dataline,MAXLINE,ifp ) != NULL )
 	{
@@ -112,6 +115,8 @@ int main( int argc, char **argv )
     	{	
         	configdata[countline].data[s-1] = '\0';          /* truncate the string */
         }	
+	printf("%s\n",configdata[countline].data);
+
 		dataline[n] = 0;
 		countline++;	
 	}	
@@ -237,13 +242,13 @@ int main( int argc, char **argv )
 	bzero( &cliaddr, sizeof( cliaddr ) );
 		 
 	cliaddr.sin_family = AF_INET;
-	cliaddr.sin_port = 0;
+	cliaddr.sin_port = htons(0);
 	inet_pton( AF_INET, IPClient, &cliaddr.sin_addr );
 
 	bind( sockfd1, (SA *)&cliaddr, sizeof( cliaddr ) );
-	printf( "bound....%d\n", sockfd1 );	
+	//printf( "bound....%d\n", sockfd1 );	
 
-	printf( "IPClient123: %s\n", inet_ntop( AF_INET, &(cliaddr.sin_addr), IPClient, MAXLINE ) );
+	printf( "IPClient: %s\n", inet_ntop( AF_INET, &(cliaddr.sin_addr), IPClient, MAXLINE ) );
 	
 	slen = sizeof( ss );
 
@@ -255,20 +260,22 @@ int main( int argc, char **argv )
 	}	
 
 	inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE );	
-	printf( "******************* CLIENT INFO *********************\n" );
-	printf( "IPClient: %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ) );
-	printf( "EPHEMERAL PORT: %d\n", ss.sin_port );
-	printf( "socket descriptor : %d\n", sockfd1 );
+	printf("\n**********************************************\n");
+	printf( "       CLIENT INFO \n" );
+	printf("**********************************************\n");	
+	printf( "IP : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ) );
+	printf( "EPHEMERAL PORT: %d\n", ntohl(ss.sin_port) );
+	//printf( "socket descriptor : %d\n", sockfd1 );
 	
 
  	bzero( &servaddr, sizeof( servaddr ) );
 	servaddr.sin_family = AF_INET;
-//	servaddr.sin_port = htonl(configdata[1].data); //assigning server port from client.in;
+	servaddr.sin_port = htonl(((int)atoi(configdata[1].data))); //assigning server port from client.in;
 
-	servaddr.sin_port = htonl(12345); //assigning server port from client.in;
+//	servaddr.sin_port = htonl(12345); //assigning server port from client.in;
 	inet_pton( AF_INET, IPServer, &servaddr.sin_addr );
 
-	printf(" calling dg_cli\n");	
+//	printf(" calling dg_cli\n");	
    	dg_cli1( stdin, sockfd1, (SA *)&servaddr, sizeof( servaddr ), configdata );
 
 	exit(0);
@@ -311,7 +318,7 @@ void check_for_packet_drop( double datagram_loss_probability )
 {
 	double value;
 	value = rand()%100 / 100.0;
-	printf("PROBABILITY VALUE IS : %d\n", value );	
+	printf("PROBABILITY VALUE IS : %f\n", value );	
 	if( value < datagram_loss_probability )
 	{
 		packet_drop = 1;
@@ -354,7 +361,12 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	{
 		printf("Dropping recieved packet, SEQUENCE NUMBER : %d..\n", recvhdr.seq );
 	}	
-	else if( recvhdr.seq != -1 )
+	else if( recvhdr.seq == -1 )
+	{
+		printf("Recieved a probing packet from server..\n");
+	}	
+	else if( (recvhdr.seq >= nr) 
+			&& (recvhdr.seq < (nr + reciever_window_size ) ) )
 	{
 		printf("Recieved Packet with packet_sequence_number : %d from server..\n", recvhdr.seq );	
 		printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
@@ -365,8 +377,9 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	}
 	else
 	{
-		printf("Recieved a probing packet from server..\n");
+		printf("Recieved Packet sequence # out of range : seq# :%d..\n", recvhdr.seq );
 	}	
+
 	return (1);
 
 //	return ( n- sizeof(struct hdr) );
@@ -390,6 +403,10 @@ ssize_t dg_send_ack( int fd )
 	
 	recvhdr.ack_no = nr;
 	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed - 1 ) ;
+        if(recvhdr.recv_window_advertisement==0)
+        {
+                printf( "\n*********************BUFFER FULL*************************\n");
+        }
 
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
@@ -505,17 +522,21 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	}
 
 	inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE );
+	printf("\n**********************************************\n");
 
-	printf( "******************* SERVER INFO *********************\n" );
-	printf( "IPServer: %s\n",IPServer);
-    printf( "SERVER PORT: %d\n", ss.sin_port );
+	printf( "        SERVER INFO \n" );
+	printf("**********************************************\n");
+
+	printf( "IP : %s\n",IPServer);
+    printf( "SERVER PORT : %d\n", ntohl(ss.sin_port) );
         	
 	size = 70000;
 	
 	setsockopt( sockfd, SOL_SOCKET, SO_SNDBUF, &size, sizeof( size ) );
 	setsockopt( sockfd, SOL_SOCKET, SO_RCVBUF, &size, sizeof( size ) );
-	
-	write( sockfd, configdata[2].data, strlen( configdata[2].data ) + 1 );
+	char hsMsg[PACKET_SIZE];	
+	sprintf(hsMsg,"%s %s",configdata[2].data,configdata[3].data);	
+	write( sockfd, hsMsg, strlen( hsMsg ) + 1 );
 	n = read( sockfd, recvline, MAXLINE );
 	
 	recvline[ n ] = 0;

@@ -51,4 +51,8 @@ if( value < p )
 {
   drop_packet();
 }
+---------------------------
+
+DOUBTS : 
+- If an ACK is lost in the network. And the server retransmits the packet, on recieving at client side, should the client send an ACK ? or ignore the incoming packet?
 

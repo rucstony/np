@@ -1,9 +1,10 @@
 #include        "unpifiplus.h"
-#include		"unprtt.h"
+#include		"unprtt_plus.h"
 #include		<setjmp.h>
 #include 		<sys/socket.h>
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define INT_MAX  +32767
 #define PACKET_SIZE 496
 
@@ -43,6 +44,7 @@ send_buffer *swnd1;
 static struct msghdr  *swnd; 
 
 /* Sliding window data */
+int     recv_window_size;
 int 	sender_window_size;
 int 	recv_advertisement;
 int 	na = 0;
@@ -118,8 +120,8 @@ int main(int argc, char **argv)
 		sa = ( struct sockaddr_in * )ifi->ifi_addr;
 
 		sa->sin_family = AF_INET;
-	//	sa->sin_port = htonl( ( size_t )configdata[0].data );
-		sa->sin_port = htonl( 12345 );
+		sa->sin_port = htonl( ((int) atoi( configdata[0].data) ));
+	//	sa->sin_port = htonl( 12345 );
 		
 		bind( sockfd[sockcount], (SA *) sa, sizeof( struct sockaddr_in ) );
 
@@ -180,11 +182,16 @@ int main(int argc, char **argv)
 			if( FD_ISSET( sockinfo[ i ].sockfd, &rset ) )
 			{
 				len = sizeof( cliaddr );
-				n = recvfrom( sockinfo[ i ].sockfd, mesg, MAXLINE, 0, (SA *) &cliaddr, &len );
+				char hsMsg[PACKET_SIZE];
+				char recvBufStr[PACKET_SIZE];
+	
+				n = recvfrom( sockinfo[ i ].sockfd, hsMsg, PACKET_SIZE, 0, (SA *) &cliaddr, &len );
 		
-				printf("Recieved message from client : %s\n", mesg );
+				printf("MESSAGE RECIEVED FROM CLIENT : %s\n", hsMsg );
+				sscanf(hsMsg,"%s %s",mesg,recvBufStr);	
+				recv_window_size=atoi(recvBufStr);	
 				inet_ntop( AF_INET, &cliaddr.sin_addr, IPClient, MAXLINE );
-				printf("Client address : %s\n",IPClient );
+				printf("CLIENT ADDRESS : %s\n\n",IPClient );
 		
 				/* Returns which interface onto which the client has connected. */ 
 				if( getsockname( sockinfo[ i ].sockfd, (SA *)&ss, &slen ) < 0 )
@@ -193,14 +200,14 @@ int main(int argc, char **argv)
 					exit(1);
 				}      
 				
-				printf("Connection recieved on :\n ");	
-				printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
+				printf("CONNECTION RECEIVED ON :\n ");	
+				printf("BOUND SOCKET ADDRESS : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
 				printf( "SERVER PORT: %d\n", ss.sin_port );
-				printf( "sockfd----- %d\n", sockinfo[ i ].sockfd );
+			//	printf( "sockfd----- %d\n", sockinfo[ i ].sockfd );
 		
 				/* Filling up the child server address structure. */
 				childservaddr.sin_family = AF_INET;
-       			childservaddr.sin_port = htonl( 0 );
+       				childservaddr.sin_port = htonl( 0 );
 				inet_pton( AF_INET, IPServer, &childservaddr.sin_addr );
 				slen = sizeof( ss );
 				inet_pton( AF_INET, IPServer, &childservaddr.sin_addr );	
@@ -434,10 +441,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	ssize_t					bytes;
 	char					sendline[MAXLINE], recvline[MAXLINE + 1];
 
-	printf( "Child server initiated...\n" );
-	printf( "******************* Child Server *********************\n" );
+	printf( "\n******************* CHILD SERVER INITIATED *********************\n" );
 
-	printf( "Creating Datagram...\n" );
+	//printf( "Creating Datagram...\n" );
 	if( ( connfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
 	{
 		printf( "socket error\n" );
@@ -456,7 +462,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	}      
 
 	printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPServer, MAXLINE ));
-	printf( "SERVER PORT: %d\n", ss.sin_port );
+	printf( "SERVER PORT: %d\n", ntohl(ss.sin_port) );
 
 	/* Connect to IPClient */
 	if( connect( connfd, cliaddr, clilen ) < 0 )
@@ -475,9 +481,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 
 	inet_ntop( AF_INET, &(ss1.sin_addr), IPClient, MAXLINE );
 
-	printf( "******************* dg_send() *********************\n" );
- 	printf( "dg_send(): Destination Address :  %s\n",IPClient );
-	printf( "dg_send(): Destination Port : %d\n", ss1.sin_port );
+ 	printf( "DESTINATION ADDRESS :  %s\n",IPClient );
+
+	printf( "DESTINATION PORT : %d\n", ss1.sin_port);
 
 
 	sprintf( mesg, "%d\n", ss.sin_port );
@@ -489,9 +495,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		exit(0);
 	}	
 
-	printf( "Reading from the newly connected socket.\n" );
+	printf( "Reading from the newly connected socket..\n" );
 	n = read( connfd, mesg, MAXLINE );
-	printf("Receieved data : %s\n",mesg );
+	printf("Received data : %s\n",mesg );
 	
 	if( n > 0 && strcmp( mesg, "ACK\n" ) == 0 )
 	{
@@ -500,7 +506,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		close( sockfd );
 	}
 
-	printf( "Picking data from the file..\n" );
+	printf( "Reading file..\n" );
 	ifp = fopen( filename, 	"r" );
 
 	swnd1 = malloc( sender_window_size*sizeof(send_buffer) );
@@ -510,19 +516,27 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			swnd1[i].data[0] = '\0';
 	}	
 
-	int buffer_position, send_counter = 0;
+	int buffer_position, send_counter = 0, t;
 
 	memset( sendline, '\0', sizeof( sendline ) );
 
 	printf("Sending file to the client..\n");	
 	int j, sender_usable_window, ack_recieved ;
 	recv_advertisement = INT_MAX;
+	ssthresh=recv_window_size;	
+	printf("SSTHRESH initiated to: %d\n",ssthresh);	
 	while(1)
 	{	
-		sender_usable_window = cwnd - ( nt - na ) ;	
+		if( cwnd > ( nt - na ) )
+			sender_usable_window = cwnd - ( nt - na ) ;	
+		else
+			sender_usable_window = 0 ;
 
 		printf("Sender usable window : %d\n recv_advertisement : %d\n",sender_usable_window, recv_advertisement );
-		
+		if(sender_usable_window==0)
+		{
+			printf( "\n*********************BUFFER FULL*************************\n");
+		}	
 		/* Check for if recv_adv == 0 i.e. no more packets to be sent. */
 		j = MIN( sender_usable_window , recv_advertisement );
 	
@@ -559,7 +573,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					/* DUP ACK's case */
 					//dup_ack = 0;
 					ssthresh = MIN( cwnd, recv_advertisement );
-					ssthresh = ( MIN( ssthresh, 2 ) )/2;
+					ssthresh = ( MAX( ssthresh, 2 ) )/2;
 					printf("****************** 3 DUPLICATE ACK'S REC'VED ******************\n");
 					printf("Retransmitting the packet %d.. \n", ack_recieved);
 					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
@@ -648,7 +662,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				{
 					/* DUP ACK's case */
 					ssthresh = MIN( cwnd, recv_advertisement );
-					ssthresh = ( MIN( ssthresh, 2 ) )/2;
+					ssthresh = ( MAX( ssthresh, 2 ) )/2;
 					printf("****************** 3 DUPLICATE ACK'S REC'VED ******************\n");
 					printf("Retransmitting the packet %d.. \n", ack_recieved);
 					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
@@ -668,15 +682,18 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					}	
 					else
 					{
-						while( na != nt && recv_advertisement != 0 )
+						t = na;
+						while( t != nt )
 						{
 							printf("******************RTT TIMEOUT EXPERIENCED******************..\n");	
-							printf("Retransmitting the packet %d.. )\n", na);
-							dg_retransmit( connfd, na );
+							printf("Retransmitting the packet %d.. )\n", t);
+							dg_retransmit( connfd, t );
+							t++;
 						}
+
 					}	
 					ssthresh = MIN( cwnd, recv_advertisement );
-					ssthresh = ( MIN( ssthresh, 2 ) )/2;
+					ssthresh = ( MAX( ssthresh, 2 ) )/2;
 					cwnd = 1;
 					slowstart = 1;
 					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
