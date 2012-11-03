@@ -490,9 +490,10 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	FILE 					*ifp;
 	ssize_t					bytes;
 	char					sendline[MAXLINE], recvline[MAXLINE + 1];
-	const int				on;
+	const int				on=1;
 	int 					onlength;
 
+	onlength = sizeof( on );
 	printf( "\n******************* CHILD SERVER INITIATED *********************\n" );
 
 	//printf( "Creating Datagram...\n" );
@@ -503,7 +504,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	}
 	
 //	setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );  
-	printf("Setting SO_DONTROUTE to %d..\n", getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, onlength ) );
+	printf("Setting SO_DONTROUTE to %d..\n", getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, &onlength ) );
 	perror( "getsockopt" );
 	setsockopt( connfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );
 
