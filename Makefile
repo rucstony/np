@@ -28,4 +28,4 @@ rtt_plus.o:	rtt_plus.c
 	${CC} ${CFLAGS} -c rtt_plus.c 
 
 clean:
-		rm -f prifinfo_plus prifinfo_plus.o get_ifi_info_plus.o rtt_plus.o udpcli.o udpserv.o udpcli udpserv ${PROGS} ${CLEANFILES}
+		rm -f prifinfo_plus prifinfo_plus.o get_ifi_info_plus.o udpcli.o udpserv.o udpcli udpserv ${PROGS} ${CLEANFILES}

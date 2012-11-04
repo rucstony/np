@@ -52,7 +52,6 @@ int 	nt =  0;
 int 	global_sequence_number = -1; 
 int prev_ack=-1, current_ack = -1, dup_ack = 0;
 int cwnd = 1, slowstart = 1, ssthresh = 5;
-int send_counter = 0;
 
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename );
 
@@ -301,30 +300,17 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
 
-	printf( "Calling sendmsg() function now..\n" );	
-	int n1;
-
-	if( send_counter == 0 )
-	{
-		signal(SIGALRM, sig_alrm);
-		rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
-	}	
-
-	sendhdr.ts = rtt_ts(&rttinfo);
-	n1 = sendmsg( fd, &msgsend, 0 );
-
-	if( send_counter == 0 )
-	{	
-		struct itimerval value, ovalue, pvalue;
-		value=rtt_start(&rttinfo);
-		setitimer( ITIMER_REAL, &value, &ovalue );
-	}	
-
 	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%sender_window_size );
 //	swnd[ (sendhdr.seq)%sender_window_size ] = msgsend;
 
 	strcpy( swnd1[ (sendhdr.seq)%sender_window_size ].data, outbuff );
 	swnd1[ (sendhdr.seq)%sender_window_size ].ts = sendhdr.ts;
+
+	printf( "Calling sendmsg() function now..\n" );	
+	int n1;
+
+	sendhdr.ts = rtt_ts(&rttinfo);
+	n1 = sendmsg( fd, &msgsend, 0 );
 
 	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
 	
@@ -390,16 +376,6 @@ void update_na( int acknowledgment_no )
 		{
 			delete_datasegment( na );
 			na++;
-			if(  slowstart == 1 )
-			{
-				cwnd += 1;
-				if( cwnd > ssthresh )
-				{
-					printf("**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
-					cwnd = ssthresh;
-					slowstart = 0;
-				}		
-			}
 		}	
 	}	
 }
@@ -437,6 +413,7 @@ int dg_recieve_ack( int fd )
 				rtt_ts(&rttinfo) - recvhdr.ts);				
 		rtt_newpack( &rttinfo );
 	}		
+
 
 	printf( "Updating the reciever advertisement global variable with %d..\n", recvhdr.recv_window_advertisement );
 	recv_advertisement = recvhdr.recv_window_advertisement;
@@ -610,7 +587,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			swnd1[i].data[0] = '\0';
 	}	
 
-	int buffer_position, t, previous_na;
+	int buffer_position, send_counter = 0, t, previous_na;
 
 	memset( sendline, '\0', sizeof( sendline ) );
 
@@ -650,6 +627,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					dg_retransmit( connfd, -1 );					
 				} 
 
+//				previous_na = na;
 				ack_recieved = dg_recieve_ack( connfd );
 
 				if( persist_timer_flag == 1 )
@@ -705,6 +683,18 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				//status_report();
 			}
 
+			if(  slowstart )
+			{
+				cwnd *= 2;
+				if( cwnd > ssthresh )
+				{
+					printf("**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
+					cwnd = ssthresh;
+					slowstart = 0;
+				}		
+			}
+
+//			else
 			if( slowstart == 0 )
 			{
 				cwnd += 1;
@@ -725,6 +715,14 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				rtt_d_flag = 1;
 			}
 
+			if( send_counter == 0 )
+			{	
+				struct itimerval value, ovalue, pvalue;
+				signal(SIGALRM, sig_alrm);
+				rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
+	        	value=rtt_start(&rttinfo);
+	        	setitimer( ITIMER_REAL, &value, &ovalue );
+	        }	
 	        	
 			buffer_position = dg_send( connfd, sendline, strlen( sendline ) );
 			
@@ -746,7 +744,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			printf("Buffer position : %d\n", buffer_position );	
 
 			memset( sendline, '\0', sizeof( sendline ) );
-
 		}
 		else
 		{
