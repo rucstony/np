@@ -730,7 +730,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			{
 				if ( rtt_timeout( &rttinfo ) < 0 && persist_timer_flag == 1 ) 
 				{
-					err_msg( "dg_send_recv: no response from server, giving up" );
+					err_msg( "Error: no response from client, giving up" );
 					rttinit = 0;	/* reinit in case we're called again */
 					errno = ETIMEDOUT;
 					return(-1);
