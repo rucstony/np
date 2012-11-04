@@ -6,7 +6,6 @@
 #include 	<sys/socket.h>
 #include 	<unpthread.h>
 #include 	<math.h>
-#include 	<sched.h>
 
 #undef  MAXLINE
 #define MAXLINE 65507
@@ -314,8 +313,6 @@ void update_nr( int packet_sequence_number )
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
 	printf("MAIN PROCESS : Unlocking recieve buffer..\n");
-
-	printf( "SCHED YIELD : %d \n",sched_yield() );
 
 	/* Unlocking nr */
 }
