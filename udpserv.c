@@ -312,10 +312,6 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
 
-	struct itimerval value, ovalue, pvalue;
-        value=rtt_start(&rttinfo);
-        setitimer( ITIMER_REAL, &value, &ovalue );
-	
 	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
 	
 	if( n1 > 0 )
@@ -410,6 +406,15 @@ int dg_recieve_ack( int fd )
 		exit(0);
 	}
 	
+	/* If we recieved the right packet ACKNOWLEDGEMENT, that is one which na was pointing to, we calculate RTT */
+	if( na == (recvhdr.ack_no - 1) )
+	{
+		rtt_stop(&rttinfo,
+				rtt_ts(&rttinfo) - recvhdr.ts);				
+		rtt_newpack( &rttinfo );
+	}		
+
+
 	printf( "Updating the reciever advertisement global variable with %d..\n", recvhdr.recv_window_advertisement );
 	recv_advertisement = recvhdr.recv_window_advertisement;
 	update_na( recvhdr.ack_no );
@@ -470,6 +475,7 @@ int dg_retransmit( int fd, int ack_recieved )
 	int n1;
 	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
+
 	struct itimerval value, ovalue, pvalue;
 	value=rtt_start(&rttinfo);	
 	setitimer( ITIMER_REAL, &value, &ovalue );	
@@ -581,7 +587,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			swnd1[i].data[0] = '\0';
 	}	
 
-	int buffer_position, send_counter = 0, t;
+	int buffer_position, send_counter = 0, t, previous_na;
 
 	memset( sendline, '\0', sizeof( sendline ) );
 
@@ -620,8 +626,8 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					dg_retransmit( connfd, -1 );					
 				} 
 
+//				previous_na = na;
 				ack_recieved = dg_recieve_ack( connfd );
-
 
 				if( persist_timer_flag == 1 )
 				{
@@ -667,7 +673,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
                                         setitimer( ITIMER_REAL, &value, &ovalue );
 	
 					//alarm(0);
-					rtt_stop(&rttinfo, rtt_ts(&rttinfo) - swnd1[ (ack_recieved-1)%sender_window_size ].ts);
+//					rtt_stop(&rttinfo, rtt_ts(&rttinfo) - swnd1[ (ack_recieved-1)%sender_window_size ].ts);
 					
 					send_counter = 0;
 					break;
@@ -708,10 +714,15 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				rtt_d_flag = 1;
 			}
 
-
-			signal(SIGALRM, sig_alrm);
-			rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
-	
+			if( send_counter == 0 )
+			{	
+				struct itimerval value, ovalue, pvalue;
+				signal(SIGALRM, sig_alrm);
+				rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
+	        	value=rtt_start(&rttinfo);
+	        	setitimer( ITIMER_REAL, &value, &ovalue );
+	        }	
+	        	
 			buffer_position = dg_send( connfd, sendline, strlen( sendline ) );
 			
 			if ( sigsetjmp( jmpbuf, 1 ) != 0 ) 
@@ -763,14 +774,14 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					}	
 					else
 					{
-						t = na;
-						while( t != nt )
-						{
+//						t = na;
+//						while( t != nt )
+//						{
 							printf("******************RTT TIMEOUT EXPERIENCED******************..\n");	
-							printf("Retransmitting the packet %d.. )\n", t);
-							dg_retransmit( connfd, t );
-							t++;
-						}
+							printf("Retransmitting the packet %d.. )\n", na);
+							dg_retransmit( connfd, na );
+//							t++;
+//						}
 
 					}	
 					ssthresh = MIN( cwnd, recv_advertisement );

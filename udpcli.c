@@ -60,6 +60,7 @@ double mu;
 /* Packet Drop  */
 int packet_drop = 0;
 
+uint32_t	packet_timestamp;
 
 static struct hdr 
 {
@@ -371,6 +372,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		printf("Recieved Packet with packet_sequence_number : %d from server..\n", recvhdr.seq );	
 		printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
 		strcpy( rwnd1[ (recvhdr.seq)%reciever_window_size ].data, inbuff );
+		packet_timestamp = recvhdr.ts;
 
 		update_ns( recvhdr.seq );
 		update_nr( recvhdr.seq );
@@ -402,11 +404,12 @@ ssize_t dg_send_ack( int fd )
 		errno = n, err_sys("pthread_mutex_lock error");
 	
 	recvhdr.ack_no = nr;
+	recvhdr.ts = packet_timestamp;
 	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed - 1 ) ;
-        if(recvhdr.recv_window_advertisement==0)
-        {
-                printf( "\n*********************BUFFER FULL*************************\n");
-        }
+    if(recvhdr.recv_window_advertisement==0)
+    {
+    	printf( "\n*********************BUFFER FULL*************************\n");
+    }
 
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
