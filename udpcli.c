@@ -308,7 +308,7 @@ void update_nr( int packet_sequence_number )
 			nr++;
 		}
 	}
-	pthread_cond_signal( &nr_cond );
+//	pthread_cond_signal( &nr_cond );
 
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
@@ -411,6 +411,8 @@ ssize_t dg_send_ack( int fd )
     if(recvhdr.recv_window_advertisement==0)
     {
     	printf( "\n*********************BUFFER FULL*************************\n");
+		pthread_cond_signal( &nr_cond );
+
     }
 
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
