@@ -485,14 +485,15 @@ void * recv_consumer( void *ptr )
 			}
 			
 		}
-		if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
-			errno = n, err_sys( "pthread_mutex_unlock error" );
-		printf("CONSUMER THREAD : Unlocking recieve buffer..\n");
-
 		sleep_time = ( rand() % 100 ) / 100.0;
 		sleep_time = log( sleep_time );	
 		sleep_time = -1*mu*sleep_time ;
 		printf("Sleeping for '%f' micro seconds\n", sleep_time );	
+
+		if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
+			errno = n, err_sys( "pthread_mutex_unlock error" );
+		printf("CONSUMER THREAD : Unlocking recieve buffer..\n");
+
 		usleep( sleep_time*1000 );
 	
 	}
