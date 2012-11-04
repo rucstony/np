@@ -421,7 +421,7 @@ int dg_recieve_ack( int fd )
 
 	current_ack = recvhdr.ack_no;
  	
- 	if( prev_ack == current_ack  )
+ 	if( prev_ack == current_ack )
 	{
 		/* We got 3 DUP's */
 		dup_ack++;
@@ -616,11 +616,12 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			while(1)
 			{	
 		
-				if( recv_advertisement == 0 )
+				if( recv_advertisement == 0 
+					&& persist_timer_flag == 0 ) 
 				{
 					persist_timer_flag = 1;
-					signal(SIGALRM, sig_alrm);
-					rtt_newpack( &rttinfo );
+					//signal(SIGALRM, sig_alrm);
+					//rtt_newpack( &rttinfo );
 					printf("************** PERSIST TIMER **************\n");	
 					printf("Sending Probe packet..\n");	
 					dg_retransmit( connfd, -1 );					
