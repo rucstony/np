@@ -311,7 +311,12 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 
 	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
-	alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
+
+	struct itimerval value, ovalue, pvalue;
+        value=rtt_start(&rttinfo);
+        setitimer( ITIMER_REAL, &value, &ovalue );
+	
+	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
 	
 	if( n1 > 0 )
 	{	
@@ -465,7 +470,10 @@ int dg_retransmit( int fd, int ack_recieved )
 	int n1;
 	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
-	alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
+	struct itimerval value, ovalue, pvalue;
+	value=rtt_start(&rttinfo);	
+	setitimer( ITIMER_REAL, &value, &ovalue );	
+	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
 
 	
 	if( n1 > 0 )
@@ -620,7 +628,15 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					if( recv_advertisement > 0) 
 					{
 						persist_timer_flag = 0;
-						alarm(0);
+						struct itimerval value, ovalue, pvalue;
+        					value.it_interval.tv_sec = 0;        /* Zero seconds */
+       						value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
+        					value.it_value.tv_sec = 0;           /* Zero seconds */
+        					value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
+	
+						setitimer( ITIMER_REAL, &value, &ovalue );
+	
+						//alarm(0);
 						break;	
 					}
 				}	
@@ -642,7 +658,15 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				{	
 					/* All Acks have been recieved.. */
 					printf("All ACK's have been recieved for buffer..\n");
-					alarm(0);
+					
+					struct itimerval value, ovalue, pvalue;
+                                        value.it_interval.tv_sec = 0;        /* Zero seconds */
+                                        value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
+                                        value.it_value.tv_sec = 0;           /* Zero seconds */
+                                        value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
+                                        setitimer( ITIMER_REAL, &value, &ovalue );
+	
+					//alarm(0);
 					rtt_stop(&rttinfo, rtt_ts(&rttinfo) - swnd1[ (ack_recieved-1)%sender_window_size ].ts);
 					
 					send_counter = 0;

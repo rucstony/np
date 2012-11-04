@@ -12,15 +12,15 @@ struct rtt_info {
   uint32_t      rtt_base;       /* # sec since 1/1/1970 at start */
 };
 
-#define RTT_RXTMIN      1       /* min retransmit timeout value, in seconds */
-#define RTT_RXTMAX     3       /* max retransmit timeout value, in seconds */
+#define RTT_RXTMIN      1000       /* min retransmit timeout value, in seconds */
+#define RTT_RXTMAX     3000       /* max retransmit timeout value, in seconds */
 #define RTT_MAXNREXMT   12       /* max # times to retransmit */
 
                                 /* function prototypes */
 void     rtt_debug(struct rtt_info *);
 void     rtt_init(struct rtt_info *);
 void     rtt_newpack(struct rtt_info *);
-int              rtt_start(struct rtt_info *);
+struct itimerval              rtt_start(struct rtt_info *);
 void     rtt_stop(struct rtt_info *, uint32_t);
 int              rtt_timeout(struct rtt_info *);
 uint32_t rtt_ts(struct rtt_info *);

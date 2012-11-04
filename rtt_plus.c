@@ -16,8 +16,8 @@ rtt_minmax(float rto)
 		rto = RTT_RXTMIN;
 	else if (rto > RTT_RXTMAX)
 		rto = RTT_RXTMAX;
+  printf(" \n rtt_minmax(): ********** RTO : %f **************\n",rto);
 
-	printf("\n************** RTO : %f ************************\n",rto);
 	return(rto);
 }
 
@@ -31,8 +31,10 @@ rtt_init(struct rtt_info *ptr)
 
 	ptr->rtt_rtt    = 0;
 	ptr->rtt_srtt   = 0;
-	ptr->rtt_rttvar = 0.75;
+	ptr->rtt_rttvar = 250;
 	ptr->rtt_rto = rtt_minmax(RTT_RTOCALC(ptr));
+	printf(" \n rtt_init(): ********** RTO : %f **************\n",ptr->rtt_rto);
+
 		/* first RTO at (srtt + (4 * rttvar)) = 3 seconds */
 }
 /* end rtt1 */
@@ -61,10 +63,17 @@ rtt_newpack(struct rtt_info *ptr)
 	ptr->rtt_nrexmt = 0;
 }
 
-int
+struct itimerval
 rtt_start(struct rtt_info *ptr)
 {
-	return((int) (ptr->rtt_rto + 0.5));		/* round float to int */
+	struct itimerval value;
+	value.it_interval.tv_sec = 0;        /* Zero seconds */
+    	value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
+    	value.it_value.tv_sec = 0;           /* Zero seconds */
+    	value.it_value.tv_usec = ptr->rtt_rto;     /* Five hundred milliseconds */
+	printf(" \n rtt_start(): ********** value.it_value.tv_usec : %d **************\n",value.it_value.tv_usec);
+	
+	return(value);		/* round float to int */
 		/* 4return value can be used as: alarm(rtt_start(&foo)) */
 }
 /* end rtt_ts */
@@ -84,7 +93,7 @@ rtt_stop(struct rtt_info *ptr, uint32_t ms)
 {
 	double		delta;
 
-	ptr->rtt_rtt = ms / 1000.0;		/* measured RTT in seconds */
+	ptr->rtt_rtt = ms; 		/* measured RTT in milliseconds */
 
 	/*
 	 * Update our estimators of RTT and mean deviation of RTT.
