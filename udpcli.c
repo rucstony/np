@@ -308,7 +308,7 @@ void update_nr( int packet_sequence_number )
 			nr++;
 		}
 	}
-	pthread_cond_signal( &nr_cond );
+//	pthread_cond_signal( &nr_cond );
 
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
@@ -468,10 +468,10 @@ void * recv_consumer( void *ptr )
 	 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
 			errno = n, err_sys("pthread_mutex_lock error");
 		
-		while( consumed == (nr - 1) )
-		{
-			pthread_cond_wait( &nr_cond, &nr_mutex );
-		}
+//		while( consumed == (nr - 1) )
+//		{
+//			pthread_cond_wait( &nr_cond, &nr_mutex );
+//		}
 			
 		while( consumed != (nr - 1) )
 		{
@@ -488,7 +488,7 @@ void * recv_consumer( void *ptr )
 		sleep_time = ( rand() % 100 ) / 100.0;
 		sleep_time = log( sleep_time );	
 		sleep_time = -1*mu*sleep_time ;
-		printf("Sleeping for '%f' micro seconds\n", sleep_time );	
+		printf("Sleeping for '%f' milli seconds\n", sleep_time );	
 
 		if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 			errno = n, err_sys( "pthread_mutex_unlock error" );
