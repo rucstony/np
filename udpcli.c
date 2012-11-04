@@ -47,6 +47,7 @@ int 	nr = 0;
 
 /* Producer consumer Mutex  */
 pthread_mutex_t	nr_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  nr_cond	 = PTHREAD_COND_INITIALIZER;	
 pthread_t		tid;
 int				val;
 
@@ -307,6 +308,7 @@ void update_nr( int packet_sequence_number )
 			nr++;
 		}
 	}
+	pthread_cond_signal( &nr_cond );
 
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
@@ -466,6 +468,11 @@ void * recv_consumer( void *ptr )
 	 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
 			errno = n, err_sys("pthread_mutex_lock error");
 		
+		while( consumed == (nr - 1) )
+		{
+			pthread_cond_wait( &nr_cond, &nr_mutex );
+		}
+			
 		while( consumed != (nr - 1) )
 		{
 			consumed++;
@@ -581,10 +588,10 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	{
 		if( packet_drop == 0 )
 		{
-			printf("************************************************\n");
-			printf( "Recieved message of %d bytes..\n", n );	
-			printf( "RECIEVED MESSAGE : %s\n",recvline );	
-			printf("************************************************\n");
+//			printf("************************************************\n");
+//			printf( "Recieved message of %d bytes..\n", n );	
+//			printf( "RECIEVED MESSAGE : %s\n",recvline );	
+//			printf("************************************************\n");
 
 			printf("Attempting to send an ACK..\n");
 			status_print();
