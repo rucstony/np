@@ -52,6 +52,7 @@ int 	nt =  0;
 int 	global_sequence_number = -1; 
 int prev_ack=-1, current_ack = -1, dup_ack = 0;
 int cwnd = 1, slowstart = 1, ssthresh = 5;
+int send_counter = 0;
 
 void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , socklen_t clilen, char *filename );
 
@@ -300,17 +301,30 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
 
+	printf( "Calling sendmsg() function now..\n" );	
+	int n1;
+
+	if( send_counter == 0 )
+	{
+		signal(SIGALRM, sig_alrm);
+		rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
+	}	
+
+	sendhdr.ts = rtt_ts(&rttinfo);
+	n1 = sendmsg( fd, &msgsend, 0 );
+
+	if( send_counter == 0 )
+	{	
+		struct itimerval value, ovalue, pvalue;
+		value=rtt_start(&rttinfo);
+		setitimer( ITIMER_REAL, &value, &ovalue );
+	}	
+
 	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%sender_window_size );
 //	swnd[ (sendhdr.seq)%sender_window_size ] = msgsend;
 
 	strcpy( swnd1[ (sendhdr.seq)%sender_window_size ].data, outbuff );
 	swnd1[ (sendhdr.seq)%sender_window_size ].ts = sendhdr.ts;
-
-	printf( "Calling sendmsg() function now..\n" );	
-	int n1;
-
-	sendhdr.ts = rtt_ts(&rttinfo);
-	n1 = sendmsg( fd, &msgsend, 0 );
 
 	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
 	
@@ -587,7 +601,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			swnd1[i].data[0] = '\0';
 	}	
 
-	int buffer_position, send_counter = 0, t, previous_na;
+	int buffer_position, t, previous_na;
 
 	memset( sendline, '\0', sizeof( sendline ) );
 
@@ -715,14 +729,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				rtt_d_flag = 1;
 			}
 
-			if( send_counter == 0 )
-			{	
-				struct itimerval value, ovalue, pvalue;
-				signal(SIGALRM, sig_alrm);
-				rtt_newpack( &rttinfo );		/* initialize for this packet and sets retransmission counter to 0*/
-	        	value=rtt_start(&rttinfo);
-	        	setitimer( ITIMER_REAL, &value, &ovalue );
-	        }	
 	        	
 			buffer_position = dg_send( connfd, sendline, strlen( sendline ) );
 			
