@@ -69,8 +69,8 @@ rtt_start(struct rtt_info *ptr)
 	struct itimerval value;
 	value.it_interval.tv_sec = 0;        /* Zero seconds */
     	value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
-    	value.it_value.tv_sec = (ptr->rtt_rto-(ptr->rtt_rto%1000))/1000;           /* Zero seconds */
-    	value.it_value.tv_usec = (ptr->rtt_rto%1000)*1000;     /* Five hundred milliseconds */
+    	value.it_value.tv_sec = (ptr->rtt_rto-(((int)ptr->rtt_rto)%1000))/1000;           /* Zero seconds */
+    	value.it_value.tv_usec = (((int)ptr->rtt_rto)%1000)*1000;     /* Five hundred milliseconds */
 	printf(" \n rtt_start(): ********** SECONDS : %d value.it_value.tv_usec : %d **************\n",value.it_value.tv_sec,value.it_value.tv_usec);
 	
 	return(value);		/* round float to int */
