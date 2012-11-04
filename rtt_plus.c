@@ -70,7 +70,7 @@ rtt_start(struct rtt_info *ptr)
 	value.it_interval.tv_sec = 0;        /* Zero seconds */
     	value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
     	value.it_value.tv_sec = 0;           /* Zero seconds */
-    	value.it_value.tv_usec = ptr->rtt_rto;     /* Five hundred milliseconds */
+    	value.it_value.tv_usec = ptr->rtt_rto*1000;     /* Five hundred milliseconds */
 	printf(" \n rtt_start(): ********** value.it_value.tv_usec : %d **************\n",value.it_value.tv_usec);
 	
 	return(value);		/* round float to int */
@@ -124,7 +124,7 @@ rtt_timeout(struct rtt_info *ptr)
 {
 	ptr->rtt_rto *= 2;		/* next RTO */
 	ptr->rtt_rto = rtt_minmax( ptr->rtt_rto );
-	
+
 	if (++ptr->rtt_nrexmt > RTT_MAXNREXMT)
 		return(-1);			/* time to give up for this packet */
 	return(0);
