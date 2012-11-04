@@ -390,6 +390,16 @@ void update_na( int acknowledgment_no )
 		{
 			delete_datasegment( na );
 			na++;
+			if(  slowstart == 1 )
+			{
+				cwnd += 1;
+				if( cwnd > ssthresh )
+				{
+					printf("**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
+					cwnd = ssthresh;
+					slowstart = 0;
+				}		
+			}
 		}	
 	}	
 }
@@ -427,7 +437,6 @@ int dg_recieve_ack( int fd )
 				rtt_ts(&rttinfo) - recvhdr.ts);				
 		rtt_newpack( &rttinfo );
 	}		
-
 
 	printf( "Updating the reciever advertisement global variable with %d..\n", recvhdr.recv_window_advertisement );
 	recv_advertisement = recvhdr.recv_window_advertisement;
@@ -641,7 +650,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					dg_retransmit( connfd, -1 );					
 				} 
 
-//				previous_na = na;
 				ack_recieved = dg_recieve_ack( connfd );
 
 				if( persist_timer_flag == 1 )
@@ -697,18 +705,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				//status_report();
 			}
 
-			if(  slowstart )
-			{
-				cwnd *= 2;
-				if( cwnd > ssthresh )
-				{
-					printf("**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
-					cwnd = ssthresh;
-					slowstart = 0;
-				}		
-			}
-
-//			else
 			if( slowstart == 0 )
 			{
 				cwnd += 1;
@@ -750,6 +746,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			printf("Buffer position : %d\n", buffer_position );	
 
 			memset( sendline, '\0', sizeof( sendline ) );
+
 		}
 		else
 		{
