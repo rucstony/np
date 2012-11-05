@@ -412,6 +412,17 @@ int dg_recieve_ack( int fd )
 		rtt_stop(&rttinfo,
 				rtt_ts(&rttinfo) - recvhdr.ts);				
 		rtt_newpack( &rttinfo );
+
+		struct itimerval value, ovalue, pvalue;
+        	value.it_interval.tv_sec = 0;        /* Zero seconds */
+            value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
+            value.it_value.tv_sec = 0;           /* Zero seconds */
+            value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
+            setitimer( ITIMER_REAL, &value, &ovalue );
+
+		
+		value=rtt_start(&rttinfo);
+	    setitimer( ITIMER_REAL, &value, &ovalue );
 	}		
 
 
