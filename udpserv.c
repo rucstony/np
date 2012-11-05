@@ -470,7 +470,7 @@ int dg_retransmit( int fd, int ack_recieved )
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 
-	if( ack_recieved != -1 )
+	if( ack_recieved > -1 )
 		strcpy( outbuff, swnd1[ ack_recieved%sender_window_size ].data );
 
 	sendhdr.seq = ack_recieved;
