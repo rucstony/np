@@ -257,7 +257,6 @@ int main(int argc, char **argv)
 				slen = sizeof( ss );
 				inet_pton( AF_INET, IPServer, &childservaddr.sin_addr );	
 	
-				//sendto( sockinfo[ i ].sockfd, mesg, sizeof( mesg ), 0, (SA *) &cliaddr, len);
 				if ( ( pid = fork() ) == 0 ) 
 				{             /* child */
 					if( is_local == 1 )
@@ -405,7 +404,19 @@ int dg_recieve_ack( int fd )
 		printf("Error no : %d\n", errno );
 		exit(0);
 	}
-	
+
+	if( recvhdr.ack_no == -3 )
+	{
+		printf("Recieved a FIN-ACK from client..\n");
+		struct itimerval value, ovalue, pvalue;
+                                        value.it_interval.tv_sec = 0;        /* Zero seconds */
+                                        value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
+                                        value.it_value.tv_sec = 0;           /* Zero seconds */
+                                        value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
+                                        setitimer( ITIMER_REAL, &value, &ovalue );
+        return -3;                                
+	}
+
 	/* If we recieved the right packet ACKNOWLEDGEMENT, that is one which na was pointing to, we calculate RTT */
 	if( na == (recvhdr.ack_no - 1) )
 	{
@@ -476,9 +487,12 @@ int dg_retransmit( int fd, int ack_recieved )
 	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
 
-	struct itimerval value, ovalue, pvalue;
-	value=rtt_start(&rttinfo);	
-	setitimer( ITIMER_REAL, &value, &ovalue );	
+	if( ack_recieved != -4 )
+	{	
+		struct itimerval value, ovalue, pvalue;
+		value=rtt_start(&rttinfo);	
+		setitimer( ITIMER_REAL, &value, &ovalue );	
+	}
 	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
 
 	
@@ -592,7 +606,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	memset( sendline, '\0', sizeof( sendline ) );
 
 	printf("Sending file to the client..\n");	
-	int j, sender_usable_window, ack_recieved ;
+	int j, sender_usable_window, ack_recieved, closing_child=0 ;
 	recv_advertisement = INT_MAX;
 	ssthresh=recv_window_size;	
 	printf("SSTHRESH initiated to: %d\n",ssthresh);	
@@ -765,10 +779,30 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				status_report();
 			}
 			printf("COMPLETED SENDING ALL PACKETS TO CLIENT..\n");
-			break;
+			dg_retransmit(connfd,-3); //FIN PACKET
+			dg_recieve_ack( connfd );
+			dg_retransmit(connfd,-4);	//final ACK 
+			closing_child = 1;
+
+			struct itimerval value, ovalue, pvalue;
+            		value.it_interval.tv_sec = 0;        /* Zero seconds */
+                    value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
+                    value.it_value.tv_sec = 120;           /* Zero seconds */
+                    value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
+                    setitimer( ITIMER_REAL, &value, &ovalue );
+
+
+		//	break;
 		}	
 		continue;
 		sendagain : 
+					if( closing_child == 1 )
+					{
+						printf("CLOSING THE CHILD PROCESS ON THE SERVER..\n");
+						exit(0);	
+						break;
+						// TERMINATE SAFELY	
+					}	
 					if( recv_advertisement == 0 )
 					{
 						dg_retransmit( connfd, -1 );

@@ -50,10 +50,11 @@ pthread_mutex_t	nr_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  nr_cond	 = PTHREAD_COND_INITIALIZER;	
 pthread_t		tid;
 int				val;
-
-
+int 			fin_handshake=0;
+int 			probing_packet_recieved = 0;
 /* Consumed sequence numbers / datagrams */
 int consumed = -1;	
+int shutting_down = 0;
 
 /* Client.in parameters */
 double mu;
@@ -360,13 +361,27 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 		exit(0);
 	}
 
-	if( packet_drop == 1 )
+ 	if( recvhdr.seq == -4 )
+	{
+		printf("Recieved a FINAL ACK from server..Closing the client..\n");
+		shutting_down = 1;
+	}	
+	else if( packet_drop == 1 )
 	{
 		printf("Dropping recieved packet, SEQUENCE NUMBER : %d..\n", recvhdr.seq );
 	}	
 	else if( recvhdr.seq == -1 )
 	{
 		printf("Recieved a probing packet from server..\n");
+		probing_packet_recieved = 1;
+	}	
+	else if( recvhdr.seq == -3 )
+	{
+		printf("*************************************\n");
+		printf("Completed recieving the file !..\n");
+		printf("Recieved a FIN from server..\n");
+		printf("*************************************\n");
+		fin_handshake = 1;
 	}	
 	else if( (recvhdr.seq >= nr) 
 			&& (recvhdr.seq < (nr + reciever_window_size ) ) )
@@ -399,13 +414,25 @@ ssize_t dg_send_ack( int fd )
 	memset( &recvhdr, '\0', sizeof( recvhdr ) ); 
 	
 	printf("Sending ACK-%d to server..\n", nr );	
-	/* Locking nr */
 
 //	printf("MAIN PROCESS : Locking recieve buffer..\n");
 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
 		errno = n, err_sys("pthread_mutex_lock error");
 	
-	recvhdr.ack_no = nr;
+	if( fin_handshake == 1 )
+	{
+		recvhdr.ack_no = -3;
+		fin_handshake = 0 ;
+	}	
+	else if( probing_packet_recieved == 1 )
+	{
+		recvhdr.ack_no = -1;
+		probing_packet_recieved = 0;
+	}
+	else
+	{	
+		recvhdr.ack_no = nr;
+	}	
 	recvhdr.ts = packet_timestamp;
 	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed - 1 ) ;
     if(recvhdr.recv_window_advertisement==0)
@@ -476,11 +503,6 @@ void * recv_consumer( void *ptr )
 		sleep = (useconds_t)sleep_time*1000;
 //		usleep( sleep );
 	
-		//while( consumed == (nr - 1) )
-		//{
-	//		pthread_cond_wait( &nr_cond, &nr_mutex );
-	//	}
-			
 		while( consumed != (nr - 1) )
 		{
 			consumed++;
@@ -590,13 +612,14 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
+		if( shutting_down == 1 )
+		{
+			printf("Closing Client ..\n");
+			exit(0);
+		}	
+
 		if( packet_drop == 0 )
 		{
-//			printf("************************************************\n");
-//			printf( "Recieved message of %d bytes..\n", n );	
-//			printf( "RECIEVED MESSAGE : %s\n",recvline );	
-//			printf("************************************************\n");
-
 			printf("Attempting to send an ACK..\n");
 			status_print();
 			
