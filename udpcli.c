@@ -413,7 +413,6 @@ ssize_t dg_send_ack( int fd )
 	memset( &msgrecv, '\0', sizeof( msgrecv ) ); 
 	memset( &recvhdr, '\0', sizeof( recvhdr ) ); 
 	
-	printf("Sending ACK-%d to server..\n", nr );	
 
 //	printf("MAIN PROCESS : Locking recieve buffer..\n");
 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
@@ -432,6 +431,8 @@ ssize_t dg_send_ack( int fd )
 	else
 	{	
 		recvhdr.ack_no = nr;
+		printf("Sending ACK-%d to server..\n", nr );	
+
 	}	
 	recvhdr.ts = packet_timestamp;
 	recvhdr.recv_window_advertisement = reciever_window_size - (nr - consumed - 1 ) ;

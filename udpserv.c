@@ -762,7 +762,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		else
 		{
 			/* the last packets */
-			while( na != nt )
+			while( na != nt || (closing_child == 1) )
 			{	
 				ack_recieved = dg_recieve_ack( connfd );
 				if( dup_ack == 3 )
@@ -788,7 +788,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			struct itimerval value, ovalue, pvalue;
             		value.it_interval.tv_sec = 0;        /* Zero seconds */
                     value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
-                    value.it_value.tv_sec = 120;           /* Zero seconds */
+                    value.it_value.tv_sec = 5;           /* Zero seconds */
                     value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
                     setitimer( ITIMER_REAL, &value, &ovalue );
 
