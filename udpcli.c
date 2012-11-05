@@ -460,8 +460,9 @@ void delete_datasegment( int consumed )
 void * recv_consumer( void *ptr )
 {
 	char output[MAXLINE]; 
-	double sleep_time;
-		
+	float sleep_time;
+	int sleep;		
+
 	while(1)
 	{
 		printf("CONSUMER THREAD : Locking recieve buffer..\n");
@@ -489,12 +490,13 @@ void * recv_consumer( void *ptr )
 			errno = n, err_sys( "pthread_mutex_unlock error" );
 		printf("CONSUMER THREAD : Unlocking recieve buffer..\n");
 
-//		sleep_time = ( rand() % 100 ) / 100.0;
-		sleep_time = logf( random() );	
+		sleep_time = ( rand() % 100 ) / 100.0;
+		sleep_time = logf( sleep_time );	
 		sleep_time = -1*mu*sleep_time ;
 		printf("Sleeping for '%f' micro seconds\n", sleep_time );	
+		sleep_time = sleep_time*1000
 	//	usleep( sleep_time*1000 );
-		usleep( 120000 );
+		usleep( sleep_time );
 	}
 
 	return(NULL);
