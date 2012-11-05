@@ -785,15 +785,14 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			dg_retransmit(connfd,-4);	//final ACK 
 			closing_child = 1;
 
+			printf("SHUTTING DOWN CHILD SERVER IN 2MSL seconds (ASSUMED AS 10 SECONDS)..\n");
 			struct itimerval value, ovalue, pvalue;
             		value.it_interval.tv_sec = 0;        /* Zero seconds */
                     value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
-                    value.it_value.tv_sec = 5;           /* Zero seconds */
+                    value.it_value.tv_sec = 10;           /* Zero seconds */
                     value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
                     setitimer( ITIMER_REAL, &value, &ovalue );
 
-
-		//	break;
 		}	
 		continue;
 		sendagain : 
