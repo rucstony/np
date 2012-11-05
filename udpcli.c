@@ -471,7 +471,7 @@ void * recv_consumer( void *ptr )
 	
 		sleep_time = ( rand() % 100 ) / 100.0;
 		sleep_time = logf( sleep_time );	
-		sleep_time = -1*mu*sleep_time ;
+		sleep_time = (float)-1*mu*sleep_time ;
 	//	printf("Sleeping for '%f' micro seconds\n", sleep_time );	
 		sleep = (useconds_t)sleep_time*1000;
 //		usleep( sleep );
