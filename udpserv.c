@@ -779,6 +779,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				status_report();
 			}
 			printf("COMPLETED SENDING ALL PACKETS TO CLIENT..\n");
+			printf("SENDING A FIN..\n");
 			dg_retransmit(connfd,-3); //FIN PACKET
 			dg_recieve_ack( connfd );
 			dg_retransmit(connfd,-4);	//final ACK 
