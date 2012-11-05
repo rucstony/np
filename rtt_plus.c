@@ -16,7 +16,6 @@ rtt_minmax(float rto)
 		rto = RTT_RXTMIN;
 	else if (rto > RTT_RXTMAX)
 		rto = RTT_RXTMAX;
-  printf(" \n rtt_minmax(): ********** RTO : %f **************\n",rto);
 
 	return(rto);
 }
@@ -33,7 +32,6 @@ rtt_init(struct rtt_info *ptr)
 	ptr->rtt_srtt   = 0;
 	ptr->rtt_rttvar = 250;
 	ptr->rtt_rto = rtt_minmax(RTT_RTOCALC(ptr));
-	printf(" \n rtt_init(): ********** RTO : %f **************\n",ptr->rtt_rto);
 
 		/* first RTO at (srtt + (4 * rttvar)) = 3 seconds */
 }
@@ -71,7 +69,7 @@ rtt_start(struct rtt_info *ptr)
     	value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
     	value.it_value.tv_sec = (ptr->rtt_rto-(((int)ptr->rtt_rto)%1000))/1000;           /* Zero seconds */
     	value.it_value.tv_usec = (((int)ptr->rtt_rto)%1000)*1000;     /* Five hundred milliseconds */
-	printf(" \n rtt_start(): ********** SECONDS : %d value.it_value.tv_usec : %d **************\n",value.it_value.tv_sec,value.it_value.tv_usec);
+	printf(" \n RTT TIMER : \nSECONDS : %d MICROSECONDS : %d **************\n",value.it_value.tv_sec,value.it_value.tv_usec);
 	
 	return(value);		/* round float to int */
 		/* 4return value can be used as: alarm(rtt_start(&foo)) */
