@@ -618,8 +618,9 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
-		if( shutting_down == 1 && ( consumed == (ns - 1) ) )
+		if( shutting_down == 1 )
 		{
+			while( ( consumed != (ns - 1) ) );
 			printf("Closing Client ..\n");
 			printf("Consumed %d packets..\n", consumed );
 			exit(0);
@@ -635,6 +636,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 			
 			status_print();
 		}	
+
 
 		memset( recvline, '\0', sizeof( recvline ) );
 		check_for_packet_drop( datagram_loss_probability );
