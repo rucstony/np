@@ -519,7 +519,7 @@ void * recv_consumer( void *ptr )
 			errno = n, err_sys( "pthread_mutex_unlock error" );
 		printf("CONSUMER THREAD : Unlocking recieve buffer..\n");
 
-		usleep( sleep );
+		usleep( 120000 );
 
 	}
 
