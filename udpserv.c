@@ -618,9 +618,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 		else
 			sender_usable_window = 0 ;
 
-		printf("\nCongestion window : \n
-				Sender usable window : %d\n 
-				Reciever window advertisement : %d\n", cwnd, sender_usable_window, recv_advertisement );
+		printf("\nCongestion window : \nSender usable window : %d\nReciever window advertisement : %d\n", cwnd, sender_usable_window, recv_advertisement );
 		if(sender_usable_window==0)
 		{
 			printf( "\n*********************BUFFER FULL*************************\n");
