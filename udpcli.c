@@ -493,6 +493,12 @@ void * recv_consumer( void *ptr )
 
 	while(1)
 	{
+		if( shutting_down == 1 && ( consumed == (ns - 1) ) )
+		{
+			printf("Closing Consuming thread..\n");
+			break;
+		}	
+
 		printf("CONSUMER THREAD : Locking recieve buffer..\n");
 	 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
 			errno = n, err_sys("pthread_mutex_lock error");
@@ -502,7 +508,6 @@ void * recv_consumer( void *ptr )
 		sleep_time = (float)-1*mu*sleep_time ;
 		printf("Sleeping for '%f' micro seconds\n", sleep_time );	
 		sleep = (useconds_t)sleep_time*1000;
-//		usleep( sleep );
 	
 		while( consumed != (nr - 1) )
 		{
@@ -613,9 +618,10 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 
 	while( ( n = dg_recieve( sockfd, recvline, MAXLINE ) ) > 0 )
 	{
-		if( shutting_down == 1 )
+		if( shutting_down == 1 && ( consumed == (ns - 1) ) )
 		{
 			printf("Closing Client ..\n");
+			printf("Consumed %d packets..\n", consumed );
 			exit(0);
 		}	
 
