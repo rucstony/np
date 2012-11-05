@@ -417,7 +417,7 @@ ssize_t dg_send_ack( int fd )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
 
 	/* Unlocking nr */
-//	printf("MAIN PROCESS : Unlocking recieve buffer..\n");
+	printf("MAIN PROCESS : Unlocking recieve buffer..\n");
 
 	msgrecv.msg_name = NULL;
 	msgrecv.msg_namelen = 0;
@@ -492,7 +492,6 @@ void * recv_consumer( void *ptr )
 		sleep_time = ( rand() % 100 ) / 100.0;
 		sleep_time = log( sleep_time );	
 		sleep_time = -1*mu*sleep_time ;
-		
 		printf("Sleeping for '%f' micro seconds\n", sleep_time );	
 	//	usleep( sleep_time*1000 );
 		usleep( 120000 );

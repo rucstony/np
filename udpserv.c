@@ -412,17 +412,6 @@ int dg_recieve_ack( int fd )
 		rtt_stop(&rttinfo,
 				rtt_ts(&rttinfo) - recvhdr.ts);				
 		rtt_newpack( &rttinfo );
-
-		struct itimerval value, ovalue, pvalue;
-        	value.it_interval.tv_sec = 0;        /* Zero seconds */
-            value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
-            value.it_value.tv_sec = 0;           /* Zero seconds */
-            value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
-            setitimer( ITIMER_REAL, &value, &ovalue );
-
-		
-		value=rtt_start(&rttinfo);
-	    setitimer( ITIMER_REAL, &value, &ovalue );
 	}		
 
 
@@ -741,7 +730,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 			{
 				if ( rtt_timeout( &rttinfo ) < 0 && persist_timer_flag == 1 ) 
 				{
-					err_msg( "Error: no response from client, giving up" );
+					err_msg( "Error : no response from client, giving up" );
 					rttinit = 0;	/* reinit in case we're called again */
 					errno = ETIMEDOUT;
 					return(-1);
