@@ -461,7 +461,7 @@ void * recv_consumer( void *ptr )
 {
 	char output[MAXLINE]; 
 	float sleep_time;
-	int sleep;		
+	useconds_t sleep;		
 
 	while(1)
 	{
@@ -473,8 +473,8 @@ void * recv_consumer( void *ptr )
 		sleep_time = logf( sleep_time );	
 		sleep_time = -1*mu*sleep_time ;
 	//	printf("Sleeping for '%f' micro seconds\n", sleep_time );	
-		sleep = (int)sleep_time*1000;
-		usleep( sleep );
+		sleep = (useconds_t)sleep_time*1000;
+//		usleep( sleep );
 	
 		//while( consumed == (nr - 1) )
 		//{
@@ -497,7 +497,7 @@ void * recv_consumer( void *ptr )
 			errno = n, err_sys( "pthread_mutex_unlock error" );
 		printf("CONSUMER THREAD : Unlocking recieve buffer..\n");
 
-//		usleep( 120000 );
+		usleep( sleep );
 
 	}
 
