@@ -249,7 +249,6 @@ int main( int argc, char **argv )
 	inet_pton( AF_INET, IPClient, &cliaddr.sin_addr );
 
 	bind( sockfd1, (SA *)&cliaddr, sizeof( cliaddr ) );
-	//printf( "bound....%d\n", sockfd1 );	
 
 	printf( "IPClient: %s\n", inet_ntop( AF_INET, &(cliaddr.sin_addr), IPClient, MAXLINE ) );
 	

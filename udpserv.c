@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 	}	
 	fclose( ifp );
 
-	printf("Creating the send window array dynamically for input window size..\n");
+	printf("Creating the send window array dynamically for input window size..\n\n");
 	sender_window_size = (int) atoi( configdata[1].data );
 	swnd = (struct msghdr *) malloc( sender_window_size*sizeof( struct msghdr ) );
 
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 		  ifi = ifi->ifi_next) 
 	{
 		sockfd[sockcount]=-1;
-		printf("bound----- %d\n",sockcount);
+		printf("Total sockets bound : %d\n",sockcount);
 		
 		int x = 0;	/*4bind unicast address */
 		if( ( sockfd[ sockcount ] = socket( AF_INET, SOCK_DGRAM, 0 ) ) == NULL )
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
 			exit(1);
 		}	
 
-		printf("BOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ));	
+		printf("\nBOUND SOCKET ADDRESSES : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ));	
 		printf( "SERVER PORT: %d\n", ss.sin_port );
 
 		sockinfo[ sockcount ].sockfd = sockfd[ sockcount ];		
@@ -142,11 +142,11 @@ int main(int argc, char **argv)
 		sockinfo[ sockcount ].ntmaddr = (struct sockaddr_in *)ifi->ifi_ntmaddr;
 		//sockinfo[sockcount].subnetaddr=ifi->sockfd[sockcount];
 
-		printf( "sockfd----- %d\n", sockinfo[ sockcount ].sockfd );
-		printf("  IP addr: %s\n",
+		printf( "\nSocket File Descriptor : %d\n", sockinfo[ sockcount ].sockfd );
+		printf( "IP addr: %s\n",
 				sock_ntop_host( (SA *)sockinfo[sockcount].ip_addr, sizeof( *sockinfo[sockcount].ip_addr ) ) );
 
-		printf("ddr: %s\n",
+		printf( "Network Mask : %s\n",
 				sock_ntop_host( (SA *)sockinfo[sockcount].ntmaddr, sizeof(*sockinfo[sockcount].ntmaddr ) ) );
 		sockcount++;
 		//		if ( (pid = fork()) == 0) {		/* child */
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 	
 				n = recvfrom( sockinfo[ i ].sockfd, hsMsg, PACKET_SIZE, 0, (SA *) &cliaddr, &len );
 		
-				printf("MESSAGE RECIEVED FROM CLIENT : %s\n", hsMsg );
+				printf("\nMESSAGE RECIEVED FROM CLIENT : %s\n", hsMsg );
 				sscanf(hsMsg,"%s %s",mesg,recvBufStr);	
 				recv_window_size=atoi(recvBufStr);	
 				inet_ntop( AF_INET, &cliaddr.sin_addr, IPClient, MAXLINE );
@@ -261,8 +261,7 @@ int main(int argc, char **argv)
 				{             /* child */
 					if( is_local == 1 )
 					{
-						printf("Setting socket to %d", setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) ) );  
-						perror( "setsockopt" );
+						setsockopt( sockinfo[ i ].sockfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) ) ;  
 					}	 
 					mydg_echo( sockinfo[ i ].sockfd, (SA *) &childservaddr, sizeof(childservaddr), (SA *) &cliaddr, sizeof(cliaddr), mesg );
 					exit(0);                /* never executed */
@@ -276,16 +275,11 @@ int main(int argc, char **argv)
 	exit(0);
 }
 
-/***************************************************************************************************************************/
-
 int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 {
 	ssize_t			n;
 	struct iovec	iovsend[2], iovrecv[2];
 
-	printf( "Entered the dg_send_packet() routine..\n" );	
-
-	printf( "Preparing the msghdr structure for passing to sendmsg()..\n" );
 	memset( &msgsend, '\0', sizeof( msgsend ) ); 
 	memset( &sendhdr, '\0', sizeof( sendhdr ) ); 
 
@@ -299,23 +293,18 @@ int dg_send_packet( int fd, const void *outbuff, size_t outbytes )
 	iovsend[1].iov_base = outbuff;
 	iovsend[1].iov_len = outbytes;
 
-	printf( "Adding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%sender_window_size );
-//	swnd[ (sendhdr.seq)%sender_window_size ] = msgsend;
-
+	printf( "\nAdding the packet to the send buffer at %dth position..\n", (sendhdr.seq)%sender_window_size );
 	strcpy( swnd1[ (sendhdr.seq)%sender_window_size ].data, outbuff );
 	swnd1[ (sendhdr.seq)%sender_window_size ].ts = sendhdr.ts;
 
-	printf( "Calling sendmsg() function now..\n" );	
 	int n1;
 
 	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
 
-	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
-	
 	if( n1 > 0 )
 	{	
-		printf( "Completed sending packet.. with %d bytes...\n", n1 );	
+		printf( "Completed sending packet..\n" );	
 	}
 	else
 	{
@@ -362,7 +351,7 @@ int dg_send( int fd, const void *outbuff, size_t outbytes )
 
 void delete_datasegment( int na )
 {
-	printf("Deleting the ACK'ed segment after updating na..\n");
+	printf("\nDeleting the ACK'ed segment after updating na..\n");
 	swnd1[ na%sender_window_size ].data[0]='\0' ;
 }
 
@@ -380,7 +369,7 @@ void update_na( int acknowledgment_no )
 				cwnd += 1;
 				if( cwnd > ssthresh )
 				{
-					printf("**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
+					printf("\n**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
 					cwnd = ssthresh;
 					slowstart = 0;
 				}		
@@ -394,7 +383,6 @@ void update_na( int acknowledgment_no )
 /* RETURNS ACK_NO */
 int dg_recieve_ack( int fd )
 {
-	printf("Recieving the ACK's...\n");
 	ssize_t			n;
 	struct iovec	iovrecv[2];
 	char 			IPClient[20];
@@ -434,7 +422,7 @@ int dg_recieve_ack( int fd )
 		rtt_stop(&rttinfo,
 				rtt_ts(&rttinfo) - recvhdr.ts);				
 		rtt_newpack( &rttinfo );
-
+		printf("Recieved an ACK-%d from client..\n", recvhdr.ack_no );
 	}		
 
 
@@ -462,7 +450,7 @@ int dg_recieve_ack( int fd )
 
 void status_report()
 {
-	printf("***********************************************************\n");
+	printf("\n***********************************************************\n");
 	printf("STATUS PRINT\n");
 	printf("***********************************************************\n");
 	printf("Recv advertisement : %d\n",recv_advertisement );
@@ -505,12 +493,10 @@ int dg_retransmit( int fd, int ack_recieved )
 		value=rtt_start(&rttinfo);	
 		setitimer( ITIMER_REAL, &value, &ovalue );	
 	}
-	//alarm(rtt_start(&rttinfo));	/* calc timeout value & start timer */
-
 	
 	if( n1 > 0 )
 	{	
-		printf( "Completed sending packet.. with %d bytes...\n", n1 );	
+		printf( "Completed sending packet..\n" );	
 	}
 	else
 	{
@@ -546,7 +532,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	
 	getsockopt( sockfd, SOL_SOCKET, SO_DONTROUTE, &on, &onlength ) ;
 	setsockopt( connfd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof( on ) );
-	printf("Setting connection socket to SO_DONTROUTE = %d\n", on );
+	printf("Setting connection socket to SO_DONTROUTE..\n", on );
 	/* Bind to IPServer and EPHEMERAL PORT and return EPHEMERAL PORT */
 
 	bind( connfd, (SA *) servaddr, sizeof( struct sockaddr_in ) );
@@ -621,7 +607,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 	int j, sender_usable_window, ack_recieved, closing_child=0 ;
 	recv_advertisement = INT_MAX;
 	ssthresh=recv_window_size;	
-	printf("SSTHRESH initiated to: %d\n",ssthresh);	
+	printf("\nSSTHRESH initiated to: %d\n",ssthresh);	
 	while(1)
 	{	
 		if( cwnd > ( nt - na ) )
@@ -680,7 +666,7 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					//dup_ack = 0;
 					ssthresh = MIN( cwnd, recv_advertisement );
 					ssthresh = ( MAX( ssthresh, 2 ) )/2;
-					printf("****************** 3 DUPLICATE ACK'S REC'VED ******************\n");
+					printf("\n****************** 3 DUPLICATE ACK'S REC'VED ******************\n");
 					printf("Retransmitting the packet %d.. \n", ack_recieved);
 					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
 										
@@ -698,15 +684,9 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
                                         value.it_value.tv_sec = 0;           /* Zero seconds */
                                         value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
                                         setitimer( ITIMER_REAL, &value, &ovalue );
-	
-					//alarm(0);
-//					rtt_stop(&rttinfo, rtt_ts(&rttinfo) - swnd1[ (ack_recieved-1)%sender_window_size ].ts);
-					
 					send_counter = 0;
 					break;
 				}	
-				//printf("After j==0 dg_recieve_ack\n");
-				//status_report();
 			}
 
 			if( slowstart == 0 )
@@ -809,21 +789,15 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 					}	
 					else
 					{
-//						t = na;
-//						while( t != nt )
-//						{
 							printf("******************RTT TIMEOUT EXPERIENCED******************..\n");	
 							printf("Retransmitting the packet %d.. )\n", na);
 							dg_retransmit( connfd, na );
-//							t++;
-//						}
-
 					}	
 					ssthresh = MIN( cwnd, recv_advertisement );
 					ssthresh = ( MAX( ssthresh, 2 ) )/2;
 					cwnd = 1;
 					slowstart = 1;
-					printf("Setting ssthresh to half of current window size : '%d'.. \n", ssthresh );
+					printf("\n\nSetting ssthresh to half of current window size : '%d'.. \n", ssthresh );
 				
 	}	
 }
