@@ -98,6 +98,10 @@ int main( int argc, char **argv )
 	
 	ifp = fopen( "client.in", mode );
 
+	printf("***********************************************************************************\n", );
+	printf("CLIENT \n", );
+	printf("***********************************************************************************\n", );
+
 	/* Unable to opent the client input file */
 	if ( ifp == NULL ) 
 	{
@@ -105,8 +109,8 @@ int main( int argc, char **argv )
 		exit(1);
 	}
 	printf("***************************************************\n");
-        printf("         DATA FROM CLIENT.IN\n");
-        printf("***************************************************\n");
+	printf("         DATA FROM CLIENT.IN\n");
+	printf("***************************************************\n");
 	
 	while ( fgets( dataline,MAXLINE,ifp ) != NULL )
 	{
@@ -118,14 +122,14 @@ int main( int argc, char **argv )
     	{	
         	configdata[countline].data[s-1] = '\0';          /* truncate the string */
         }	
-	printf("%s\n",configdata[countline].data);
+		printf("%s\n",configdata[countline].data);
 
 		dataline[n] = 0;
 		countline++;	
 	}	
 	fclose( ifp );
 	
-	printf("Creating the recieve window array dynamically for input window size..\n");
+	printf("\nCreating the recieve window array dynamically for input window size..\n");
 	reciever_window_size = (int) atoi( configdata[3].data );
 
 	rwnd = (struct msghdr *) malloc( reciever_window_size*sizeof( struct msghdr ) );
@@ -134,7 +138,7 @@ int main( int argc, char **argv )
 
 	sprintf( IPServer, "%s", configdata[0].data );
 	
-	printf("*************************************************************\n");
+	printf("\n*************************************************************\n");
 	printf("	  INTERFACE IP'S 	   						 \n");
 	printf("*************************************************************\n");
 
@@ -198,14 +202,10 @@ int main( int argc, char **argv )
 	    	inet_ntop( AF_INET, &ip, ip1, MAXLINE );
 	   		inet_ntop( AF_INET, &netmask, nm1, MAXLINE );
 	   		
-//	    	printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", ip1, nm1, network1 );
-
 	    	inet_pton( AF_INET, configdata[0].data, &serverip );
 	    	subnet.s_addr = serverip.s_addr & netmask.s_addr;
 			    	
 			inet_ntop( AF_INET, &subnet, network2, MAXLINE );
-
-//			printf("IP : %s\nNet Mask : %s\nNetwork : %s\n", configdata[0].data, nm1, network2 );
 
 			if( strcmp( network1, network2 ) == 0 )
 			{
@@ -267,17 +267,13 @@ int main( int argc, char **argv )
 	printf("**********************************************\n");	
 	printf( "IP : %s\n", inet_ntop( AF_INET, &(ss.sin_addr), IPClient, MAXLINE ) );
 	printf( "EPHEMERAL PORT: %d\n", ntohl(ss.sin_port) );
-	//printf( "socket descriptor : %d\n", sockfd1 );
-	
 
  	bzero( &servaddr, sizeof( servaddr ) );
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htonl(((int)atoi(configdata[1].data))); //assigning server port from client.in;
 
-//	servaddr.sin_port = htonl(12345); //assigning server port from client.in;
 	inet_pton( AF_INET, IPServer, &servaddr.sin_addr );
 
-//	printf(" calling dg_cli\n");	
    	dg_cli1( stdin, sockfd1, (SA *)&servaddr, sizeof( servaddr ), configdata );
 
 	exit(0);
@@ -294,7 +290,7 @@ void update_ns( int packet_sequence_number )
 void update_nr( int packet_sequence_number )
 {
 	/* Locking nr */
-	printf("MAIN PROCESS : Locking recieve buffer..\n");
+	printf("\nMAIN PROCESS : Locking recieve buffer..\n");
 
 	if ( ( n = pthread_mutex_lock( &nr_mutex ) ) != 0)
 		errno = n, err_sys("pthread_mutex_lock error");
@@ -302,13 +298,11 @@ void update_nr( int packet_sequence_number )
 	if( packet_sequence_number == nr )
 	{
 		nr = nr + 1;
-	//	while( ( rwnd[nr].msg_iovlen != NULL ) || nr < ns )
 		while( nr < ns && ( rwnd1[nr%reciever_window_size].data[0] != 0 ) )
 		{
 			nr++;
 		}
 	}
-//	pthread_cond_signal( &nr_cond );
 
 	if ( (n = pthread_mutex_unlock(&nr_mutex)) != 0 )
 		errno = n, err_sys( "pthread_mutex_unlock error" );
@@ -321,7 +315,7 @@ void check_for_packet_drop( double datagram_loss_probability )
 {
 	double value;
 	value = rand()%100 / 100.0;
-	printf("PROBABILITY VALUE IS : %f\n", value );	
+	printf("\nPACKET DROP PROBABILITY VALUE IS : %f\n", value );	
 	if( value < datagram_loss_probability )
 	{
 		packet_drop = 1;
@@ -362,21 +356,21 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 
  	if( recvhdr.seq == -4 )
 	{
-		printf("Recieved a FINAL ACK from server..Closing the client..\n");
+		printf("\nRecieved a FINAL ACK from server..Closing the client..\n");
 		shutting_down = 1;
 	}	
 	else if( packet_drop == 1 )
 	{
-		printf("Dropping recieved packet, SEQUENCE NUMBER : %d..\n", recvhdr.seq );
+		printf("\nDropping recieved packet, SEQUENCE NUMBER : %d..\n", recvhdr.seq );
 	}	
 	else if( recvhdr.seq == -1 )
 	{
-		printf("Recieved a probing packet from server..\n");
+		printf("\nRecieved a probing packet from server..\n");
 		probing_packet_recieved = 1;
 	}	
 	else if( recvhdr.seq == -3 )
 	{
-		printf("*************************************\n");
+		printf("\n*************************************\n");
 		printf("Completed recieving the file !..\n");
 		printf("Recieved a FIN from server..\n");
 		printf("*************************************\n");
@@ -385,7 +379,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	else if( (recvhdr.seq >= nr) 
 			&& (recvhdr.seq < (nr + reciever_window_size ) ) )
 	{
-		printf("Recieved Packet with packet_sequence_number : %d from server..\n", recvhdr.seq );	
+		printf("\nRecieved Packet with packet_sequence_number : %d from server..\n", recvhdr.seq );	
 		printf( "Adding the packet to the receive buffer at %dth position..\n", (recvhdr.seq)%reciever_window_size );
 		strcpy( rwnd1[ (recvhdr.seq)%reciever_window_size ].data, inbuff );
 		packet_timestamp = recvhdr.ts;
@@ -395,7 +389,7 @@ ssize_t dg_recieve( int fd, void *inbuff, size_t inbytes )
 	}
 	else
 	{
-		printf("Recieved Packet sequence # out of range : seq# :%d..\n", recvhdr.seq );
+		printf("\nRecieved Packet sequence # out of range : seq# :%d..\n", recvhdr.seq );
 	}	
 
 	return (1);
@@ -430,7 +424,7 @@ ssize_t dg_send_ack( int fd )
 	else
 	{	
 		recvhdr.ack_no = nr;
-		printf("Sending ACK-%d to server..\n", nr );	
+		printf("\nSending ACK-%d to server..\n", nr );	
 
 	}	
 	recvhdr.ts = packet_timestamp;
@@ -462,7 +456,7 @@ ssize_t dg_send_ack( int fd )
 	}	
 	else
 	{
-		printf("Dropping ACK packet : ACK-%d..\n", recvhdr.ack_no );
+		printf("\nDropping ACK packet : ACK-%d..\n", recvhdr.ack_no );
 	}	
 
 	return ( n );
@@ -480,7 +474,7 @@ void status_print()
 
 void delete_datasegment( int consumed )
 {
-	printf("Deleting the consumed segment..\n");
+	printf("\nDeleting the consumed segment..\n");
 	rwnd1[ consumed%reciever_window_size ].data[0]='\0' ;
 }
 
@@ -587,7 +581,7 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 	/* Assigning server port from client.in */
 	ss.sin_port = htonl( (uint16_t) atoi( recvline ) ); 
 
-	printf( "Reconnecting on server child port number %d...\n", ss.sin_port );
+	printf( "\nReconnecting on server child port number %d...\n", ss.sin_port );
 	slen = sizeof( ss );
 	if( connect( sockfd, &ss, slen ) < 0 )
 	{
@@ -620,14 +614,14 @@ void dg_cli1( FILE *fp, int sockfd, const SA *pservaddr, socklen_t servlen, conf
 		if( shutting_down == 1 )
 		{
 			while( ( consumed != (ns - 1) ) );
-			printf("Closing Client ..\n");
+			printf("\nClosing Client ..\n");
 			printf("Consumed %d packets..\n", consumed );
 			exit(0);
 		}	
 
 		if( packet_drop == 0 )
 		{
-			printf("Attempting to send an ACK..\n");
+			printf("\nAttempting to send an ACK..\n");
 			status_print();
 			
 			check_for_packet_drop( datagram_loss_probability );
