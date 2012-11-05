@@ -408,12 +408,12 @@ int dg_recieve_ack( int fd )
 	if( recvhdr.ack_no == -3 )
 	{
 		printf("Recieved a FIN-ACK from client..\n");
-		struct itimerval value, ovalue, pvalue;
-                                        value.it_interval.tv_sec = 0;        /* Zero seconds */
-                                        value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
-                                        value.it_value.tv_sec = 0;           /* Zero seconds */
-                                        value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
-                                        setitimer( ITIMER_REAL, &value, &ovalue );
+//		struct itimerval value, ovalue, pvalue;
+  //                                      value.it_interval.tv_sec = 0;        /* Zero seconds */
+    //                                    value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
+      //                                  value.it_value.tv_sec = 0;           /* Zero seconds */
+        //                                value.it_value.tv_usec = 0;     /* Five hundred milliseconds */
+          //                              setitimer( ITIMER_REAL, &value, &ovalue );
         return -3;                                
 	}
 
@@ -487,7 +487,7 @@ int dg_retransmit( int fd, int ack_recieved )
 	sendhdr.ts = rtt_ts(&rttinfo);
 	n1 = sendmsg( fd, &msgsend, 0 );
 
-	if( ack_recieved != -4 )
+	if( ack_recieved > -3 )
 	{	
 		struct itimerval value, ovalue, pvalue;
 		value=rtt_start(&rttinfo);	
