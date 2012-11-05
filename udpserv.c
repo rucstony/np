@@ -763,14 +763,15 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				}	
 				status_report();
 			}
-			printf("COMPLETED SENDING ALL PACKETS TO CLIENT..\n");
+			printf("**************** SERVER CHILD SHUTDOWN PROCEDURE INTITIATED *****************\n");
+			printf("\nCOMPLETED SENDING ALL PACKETS TO CLIENT..\n");
 			printf("SENDING A FIN..\n");
 			dg_retransmit(connfd,-3); //FIN PACKET
 			dg_recieve_ack( connfd );
 			dg_retransmit(connfd,-4);	//final ACK 
 			closing_child = 1;
 
-			printf("SHUTTING DOWN CHILD SERVER IN 2MSL seconds (ASSUMED AS 10 SECONDS)..\n");
+			printf("\nSHUTTING DOWN CHILD SERVER IN 2MSL seconds (ASSUMED AS 10 SECONDS)..\n");
 			struct itimerval value, ovalue, pvalue;
             		value.it_interval.tv_sec = 0;        /* Zero seconds */
                     value.it_interval.tv_usec = 0;  /* Two hundred milliseconds */
