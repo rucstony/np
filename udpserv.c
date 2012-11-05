@@ -375,6 +375,17 @@ void update_na( int acknowledgment_no )
 		{
 			delete_datasegment( na );
 			na++;
+			if(  slowstart )
+			{
+				cwnd += 1;
+				if( cwnd > ssthresh )
+				{
+					printf("**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
+					cwnd = ssthresh;
+					slowstart = 0;
+				}		
+			}
+
 		}	
 	}	
 }
@@ -423,6 +434,7 @@ int dg_recieve_ack( int fd )
 		rtt_stop(&rttinfo,
 				rtt_ts(&rttinfo) - recvhdr.ts);				
 		rtt_newpack( &rttinfo );
+
 	}		
 
 
@@ -697,18 +709,6 @@ void mydg_echo( int sockfd, SA *servaddr, socklen_t servlen, SA *cliaddr , sockl
 				//status_report();
 			}
 
-			if(  slowstart )
-			{
-				cwnd *= 2;
-				if( cwnd > ssthresh )
-				{
-					printf("**************** CONGESTION AVOIDANCE PHASE ENTERED ****************\n");
-					cwnd = ssthresh;
-					slowstart = 0;
-				}		
-			}
-
-//			else
 			if( slowstart == 0 )
 			{
 				cwnd += 1;
